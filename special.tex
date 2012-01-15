@@ -28,6 +28,82 @@
 
 \chapter{Special Topics}
 \label{ch:special}
+\section{Free energy implementation}
+
+For free energy calculations, there are two things that must be
+specified; the end states, and the pathway connecting the end states.
+The end states can be specified in two ways.  The most straightforward
+is through the specification of end states in the topology file.  Most
+potential forms support both a $A$ state and a $B$ state. Whenever both
+states are specified, then the A state corresponds to the initial free
+energy state, and the B state corresponds to the final state.
+
+In some cases, the end state can also be defined in some cases without
+altering the topology, solely through the .mdp file, through the use
+of the couple-moltype,couple-lambda0, couple-lambda1, and
+couple-intramol mdp keywords.  Any molecule type defined identifed in
+couple-moltype will automatically have a B state implicitlty
+constructed. The molecular parameters that are turned on in the state
+are defined by couple-lambda0 and couple-lambda1.  The choices are
+'q','vdw', and 'vdw-q'; these indicate the parameters that are turned
+on in the 0 or 1 state.  
+
+Once the end states are defined, then the path between the end states
+has to be defined. This path is defined solely in the .mdp file.
+Starting in 4.6, $lambda$ is a vector of components, with Columbic,
+van der Waals, bonded, restraint, and mass components all able to be
+adjusted independently.  This makes it possible to turn off the
+Coulombic term linearly, and then the van der Waals using soft core,
+all in the same simulation.  This is especially useful for replica
+exchange or expanded ensemble simulations, where it is important to
+sample all the way from interacting to noninteracting states in the
+same simulation to improve sampling.
+
+'fep-lambdas' is the default lambda array.  All of the other lambda
+arrays use the values in this array if they are not specified.  The
+previous behavior, where the pathway is controlled by a single
+$\lambda$ variable, can be preserved by using only fep-lambdas to
+define the pathway.
+
+For example, if you wanted to first to change the Coulombic terms,
+then the van der Waals terms, changing bonded at the same time rate as
+the van der Walls, but changing the restraints throughout the first
+two thirds of the simulation, then you could use something like this:
+
+\begin{verbatim}
+coul-lambdas           = 0.0 0.2 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0
+vdw-lambdas            = 0.0 0.0 0.0 0.0 0.4 0.5 0.6 0.7 0.8 1.0
+bonded-lambdas         = 0.0 0.0 0.0 0.0 0.4 0.5 0.6 0.7 0.8 1.0
+restraint-lambdas      = 0.0 0.0 0.1 0.2 0.3 0.5 0.7 1.0 1.0 1.0
+\end{verbatim}
+
+This is also equivalent to:  
+
+\begin{verbatim}
+fep-lambdas            = 0.0 0.0 0.0 0.0 0.4 0.5 0.6 0.7 0.8 1.0
+coul-lambdas           = 0.0 0.2 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0
+restraint-lambdas      = 0.0 0.0 0.1 0.2 0.3 0.5 0.7 1.0 1.0 1.0
+\end{verbatim}
+The fep-lambda array, in this case, is being used as the default to
+fill in the bonded and vdw lambda arrays.  Usually, it's best to fill
+in all array explicitly, just to make sure things are properly
+assigned.
+
+If you want to turn on only restraints going from A to B, then it would be:
+\begin{verbatim}
+restraint-lambdas      = 0.0 0.1 0.2 0.4 0.6 1.0
+\end{verbatim}
+and all of the other components of the $\lambda$ vector would be left in the A state.
+
+To compute free energies with a multivector $\lambda$ using 
+thermodynamic integration, then the equation becomes vector equation:
+\beq
+\Delta F = \int \langle \nabla H \rangle \cdot d\vec{\lambda}
+\eeq
+or for finite differences:
+\beq
+\Delta F \approx \int \sum \langle \nabla H \rangle \cdot \Delta\lambda
+\eeq
 
 \section{Potential of mean force}
 

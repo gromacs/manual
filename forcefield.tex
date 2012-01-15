@@ -1545,7 +1545,12 @@ interpolated smoothly from state A ($\lambda=0$) to state B
 ($\lambda=1$) and vice versa.
 All bonded interactions are interpolated by linear interpolation
 of the interaction parameters. Non-bonded interactions can be
-interpolated linearly or via soft-core interactions.
+interpolated linearly or via soft-core interactions. 
+
+Starting in Gromacs 4.6, $\lambda$ is a vector, allowing different
+components of the free energy transformation to be carried out at
+different rates.  Coulomb, Lennard-Jones, bonded, and restraint terms
+can all be controlled independently, as described in the .mdp options.
 
 \subsubsection{Harmonic potentials}
 The example given here is for the bond potential, which is harmonic
@@ -1753,6 +1758,13 @@ produce peaks in $\partial H/\partial\LAM$ at $\LAM$ is 0 and/or 1 for $p=1$
 and close to 0 and/or 1 with $p=2$. Lowering {\tt\mbox{sc_sigma}} will decrease
 this effect, but it will also increase the interactions with hydrogens
 relative to the other interactions in the soft-core state.
+
+Recently, a new formulation of the soft core forma has been derived
+that can in many cases be flatter and lower variance than the softcore
+path described above.~\cite{Pham2011} This ``1-1-48'' path is also
+implemented in Gromacs. Note that for this path , generally we should
+have $0.001 < \alpha < 0.003$,rather than $\alpha \approx 0.5$.
+
 %} % Brace matches ifthenelse test for gmxlite
 
 %\ifthenelse{\equal{\gmxlite}{1}}{}{
@@ -2165,23 +2177,24 @@ only the mass of the A-state is used for the weight
 
 %\ifthenelse{\equal{\gmxlite}{1}}{}{
 \section{Dispersion correction}
-\index{dispersion correction}
-In this section, we derive long-range corrections due to the use of a
-cut-off for Lennard-Jones or Buckingham interactions.
-We assume that the cut-off is
-so long that the repulsion term can safely be neglected, and therefore
-only the dispersion term is taken into account. Due to the nature of
-the dispersion interaction, energy and pressure corrections are both
-negative. While the energy correction is usually small, it may be
-important for free energy calculations. In contrast, the pressure correction
-is very large and can not be neglected. Although it is, in
-principle, possible to parameterize a force field such that the pressure
-is close to 1 bar even without correction, such a method makes the
-parameterization dependent on the cut-off and is therefore
-undesirable. {\bf Note} that it is not appropriate to use the long-range
-correction to the dispersion without using either a
-\normindex{reaction field} method or a proper long-range
-electrostatics method such as Ewald summation or PPPM.
+\index{dispersion correction} In this section, we derive long-range
+corrections due to the use of a cut-off for Lennard-Jones or
+Buckingham interactions.  We assume that the cut-off is so long that
+the repulsion term can safely be neglected, and therefore only the
+dispersion term is taken into account. Due to the nature of the
+dispersion interaction, energy and pressure corrections are both
+negative. The energy correction is usually small, and could in theory
+be computed after the simulation.  In contrast, the pressure
+correction is very large for fluids at standard temperature and
+pressure and must be computed at each step. Although it is, in
+principle, possible to parameterize a force field such that the
+pressure is close to 1 bar even without correction, such a method
+makes the parameterization dependent on the cut-off and is therefore
+undesirable. {\bf Note} that it is not appropriate to use the
+long-range correction to the dispersion for a fluid with any nonzero
+partial charges without using either a \normindex{reaction field}
+method or a proper long-range electrostatics method such as Ewald
+summation or PPPM.
 
 \subsection{Energy}
 \label{sec:ecorr}
