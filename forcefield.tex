@@ -2673,6 +2673,36 @@ When selecting the CHARMM force field in {\tt \normindex{pdb2gmx}} the default o
 The MARTINI force field is a coarse-grain parameter set that allows for the construction 
 of many systems, including proteins and membranes.
 
+\subsection{Coarse-grained force-fields}
+\index{force-field, coarse-grainded}
+\label{sec:cg-forcefields}
+
+A coarse-grainded force field is not just one specific force-field (set of parameter), but a set of (mostly tabulated) interactions, 
+made in way, such that coarse-grained system (less degrees of freedom) reproduces certain properties of underlying high resoultion system 
+(many degrees of freedom), which can be an atomistic system or even an experiment.
+
+Depending on the properties to reproduce there are different methods to derrive such force fields:
+\begin{itemize}
+\item Conserving free energies
+\begin{itemize}
+\item MARTINI force-field
+\end{itemize}
+\item Conserving distributions (like the radial distribution function)
+\begin{itemize}
+\item (iterative) Boltzmann inversion
+\item Inverse Monte Carlo 
+\end{itemize}
+\item Conversing forces
+\begin{itemize}
+\item Force matching
+\end{itemize}
+\end{itemize}
+
+Note that this list is incomplete. There are software packages, based on GROMACS, which 
+offer implementation of the above algorithms, i.e. the \normindex{VOTCA package}, which
+can be found under \href{http://www.votca.org}{www.votca.org}, has several coarse-graining 
+tutortials using GROMACS on this matter.
+
 % LocalWords:  dihedrals centro ij dV dr LJ lj rcl jj Bertelot OPLS bh bham rf
 % LocalWords:  coul defunits grompp crf vcrf fcrf Tironi Debye kgrf cgrf krf dx
 % LocalWords:  PPPM der Waals erfc lr elstat chirality bstretch bondpot kT kJ
