@@ -1981,11 +1981,12 @@ the dynamics will be completely different from MD, but the sampling is
 still correct.
 
 In {\gromacs} there are two algorithms to integrate equation (\ref{SDeq}):
-an efficient one, where the relative error in the temperature
-is $\frac{1}{2}\Delta t\, \xi$,
-and a more complex leap-frog algorithm~\cite{Gunsteren88},
-which has third-order accuracy for any value of $\Delta t\, \xi$.
-In this complex algorithm four Gaussian random numbers are required
+a simple and efficient one
+and a more complex leap-frog algorithm~\cite{Gunsteren88}.
+The accuracy of both integrators is equivalent to the normal MD leap-frog and
+velocity-Verlet integrator, except with constraints where the simple
+SD integrator is significantly less accurate.
+In the complex algorithm four Gaussian random numbers are required
 per integration step per degree of freedom, and with constraints the
 coordinates need to be constrained twice per integration step.
 Depending on the computational cost of the force calculation,
