@@ -1613,8 +1613,8 @@ What is needed as well is a transition state optimizer.
 The adaptive resolution scheme~\cite{Praprotnik2005,Praprotnik2008} (\seeindex{\adress}{Adaptive Resolution Scheme}) couples two systems with different resolutions by a force interpolation scheme.
 In comparison to the mixed Quantum-Classical simulation techniques of the previous section, the number of high resolution particles is not fixed, but can vary over the simulation time.
 
-Below we discuss this for a coarse-grained and an atomistic representation of the same system, see \figref{adress} for illustration.
-The details of implementation described in this section was published in~\cite{Junghans2010,Fritsch2012}.
+Below we discuss \adress for a coarse-grained and an atomistic representation of the same system, see \figref{adress} for illustration.
+The details of implementation described in this section were published in~\cite{Junghans2010,Fritsch2012}.
 
 \begin{figure}
 \begin{center}
@@ -1624,7 +1624,9 @@ The details of implementation described in this section was published in~\cite{J
 \end{center}
 \end{figure}
 Every molecule needs a well-defined mapping point in both representations, usually the center of mass,
-but any other linear combination of particle coordinates is also sufficient.
+but any other linear combination of particle coordinates is also sufficient. 
+The mapping point is chosen by the virtual site used for the coarse-grained particles.
+In this implementation molecules are modeled by charge groups, which actually allows to have multiple mapping point per molecule, which can be useful for bigger molecules like polymers.
 
 The force between two molecules is given by~\cite{Praprotnik2005}
 \footnote{Note that the equation obeys Newton's third law, which is not the case for other interpolation schemes~\cite{DelleSite2007}.}:
@@ -1632,8 +1634,7 @@ The force between two molecules is given by~\cite{Praprotnik2005}
 \vec{F}_{\alpha\beta}=w_\alpha w_\beta \vec{F}^\mathrm{ex,mol}_{\alpha\beta} + \left[1-w_\alpha w_\beta\right] \vec{F}^\mathrm{cg,mol}_{\alpha\beta}~,
 \label{eqn:interpolation}
 \end{equation}
-where $\alpha$ and $\beta$ label the two molecules and $w_\alpha$, $w_\beta$ are the adaptive weights of the two molecules, 
-which are a~function of the position of their mapping points. These forces between molecules to their atoms using virtual sites.
+where $\alpha$ and $\beta$ label the two molecules and $w_\alpha$, $w_\beta$ are the adaptive weights of the two molecules, which is chosen by the {\tt adress-site} option.
 
 The first part, which results from the explicit interaction of the molecules, can be written as:
 \begin{equation}
@@ -1671,7 +1672,7 @@ w(x)=
 \end{equation}
 where $d_\mathrm{ex}$ and $d_\mathrm{hy}$ are the sizes of the explicit and the hybrid region, respectively.
 
-Spherical and one-dimensional splitting  of the simulation box has been implemented
+Spherical and one-dimensional splitting  of the simulation box has been implemented ({\tt adress-type} option)
 and depending on this, the distance $x$ to the center of the explicit region is calculated as follows:
 \begin{equation}
 x=
@@ -1682,8 +1683,7 @@ x=
 \end{array}
 \right.~,
 \end{equation}
-where $\vec{R}_\mathrm{ct}$ is the center of the explicit zone, which can be fixed or moved in time (e.g. with the center of a molecule).
-$\vec{R}_\alpha$ is the mapping point of the $\alpha$th molecule. For the center of mass mapping, it is given by:
+where $\vec{R}_\mathrm{ct}$ is the center of the explicit zone (defined by {\tt adress-reference-coords} option). $\vec{R}_\alpha$ is the mapping point of the $\alpha$th molecule. For the center of mass mapping, it is given by:
 \begin{equation}
 R_\alpha=\frac{\sum_{i\in\alpha}m_i r_i}{\sum_{i\in\alpha}m_i}
 \label{equ:com-def}
@@ -1697,7 +1697,8 @@ It consists of a~space-dependent external field applied in the region of interpo
 Its effect is exerted on the coarse-grained site of the molecules and can be used to correct local density inhomogeneities in the hybrid region.
 The force can also be used to couple explicit and coarse-grained regimes of different state points.
 
-%TODO ref to votca manual
+The force can be determined via an interative procedure, which in decribed in detail in the \href{http://code.google.com/p/votca/downloads/list?&q=manual}{manual} of the \normindex{VOTCA package}~\cite{ruehle2009}. Setting the {\tt adress-interface-correction} to {\tt thermoforce} enabled the thermodynamic force correction and {\tt adress-tf-grp-names} defines the energy groups to act on.
+
 \section{{\gromacs} on GPUs}
 
 {\gromacs} 4.5 provides support for GPU acceleration through 
