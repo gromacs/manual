@@ -1609,7 +1609,7 @@ in the calculation.
 What is needed as well is a transition state optimizer.
 
 \section{\normindex{Adaptive Resolution Scheme}}
-\newcommand{\adress}{AdResS}
+\newcommand{\adress}{AdResS\;}
 The adaptive resolution scheme~\cite{Praprotnik2005,Praprotnik2008} (\seeindex{\adress}{Adaptive Resolution Scheme}) couples two systems with different resolutions by a force interpolation scheme.
 In comparison to the mixed Quantum-Classical simulation techniques of the previous section, the number of high resolution particles is not fixed, but can vary over the simulation time.
 
@@ -1626,7 +1626,7 @@ The details of implementation described in this section were published in~\cite{
 Every molecule needs a well-defined mapping point in both representations, usually the center of mass,
 but any other linear combination of particle coordinates is also sufficient. 
 The mapping point is chosen by the virtual site used for the coarse-grained particles.
-In this implementation molecules are modeled by charge groups, which actually allows to have multiple mapping point per molecule, which can be useful for bigger molecules like polymers.
+In this implementation molecules are modeled by charge groups, which actually allows to have multiple mapping points per molecule, which can be useful for bigger molecules like polymers.
 
 The force between two molecules is given by~\cite{Praprotnik2005}
 \footnote{Note that the equation obeys Newton's third law, which is not the case for other interpolation schemes~\cite{DelleSite2007}.}:
@@ -1634,7 +1634,7 @@ The force between two molecules is given by~\cite{Praprotnik2005}
 \vec{F}_{\alpha\beta}=w_\alpha w_\beta \vec{F}^\mathrm{ex,mol}_{\alpha\beta} + \left[1-w_\alpha w_\beta\right] \vec{F}^\mathrm{cg,mol}_{\alpha\beta}~,
 \label{eqn:interpolation}
 \end{equation}
-where $\alpha$ and $\beta$ label the two molecules and $w_\alpha$, $w_\beta$ are the adaptive weights of the two molecules, which is chosen by the {\tt adress-site} option.
+where $\alpha$ and $\beta$ label the two molecules and $w_\alpha$, $w_\beta$ are the adaptive weights of the two molecules, which are chosen by the {\tt adress-site} option.
 
 The first part, which results from the explicit interaction of the molecules, can be written as:
 \begin{equation}
@@ -1642,14 +1642,14 @@ The first part, which results from the explicit interaction of the molecules, ca
 \end{equation}
 where $\vec{F}^\mathrm{ex}_{ij}$ is the force between the $i$th atom  in  $\alpha$th molecule and the $j$th atom in the $\beta$th molecule, which is given by an explicit force field.
 The second part of \eqnref{interpolation} comes from the coarse-grained interaction of the molecules.
-The coarse-grained force field is usually derived from the atomistic system by structure-based coarse-graining (see \secref{cg-forcefields}
+The coarse-grained force field is usually derived from the atomistic system by structure-based coarse-graining (see \secref{cg-forcefields}).
 
 The important element of this interpolation (see \eqnref{interpolation}) is the adaptive weight function (for illustration see \figref{adress}):
 \begin{equation}
 w(x)=
 \left\{\begin{array}{c@{\;:\;}l}
 1&\mathrm{atomistic/explicit\;region}\\
-0<w<1&\mathrm{hybrid region}\\
+0<w<1&\mathrm{hybrid\;region}\\
 0&\mathrm{coarse-grained\;region}
 \end{array}\right.~,
 \label{equ:weighting}
@@ -1658,7 +1658,7 @@ which has a value between 0 and 1.
 Obviously this definition of $w$ gives a purely explicit force in the explicit region and a purely coarse-grained force in the coarse-grained region,
 so essentially \eqnref{interpolation} describes something new for the hybrid region only.
 Depending on the physical interest of the research, other functions could be implemented as long as the following boundary conditions are fulfilled:
-The function is 1) continuous, 2) monotonic and 3) having zero derivatives at the boundaries.
+The function is 1) continuous, 2) monotonic and 3) has zero derivatives at the boundaries.
 
 In GROMACS a $\cos^2$-like function is implemented as a weighting function:
 \begin{equation}
@@ -1697,7 +1697,7 @@ It consists of a~space-dependent external field applied in the region of interpo
 Its effect is exerted on the coarse-grained site of the molecules and can be used to correct local density inhomogeneities in the hybrid region.
 The force can also be used to couple explicit and coarse-grained regimes of different state points.
 
-The force can be determined via an interative procedure, which in decribed in detail in the \href{http://code.google.com/p/votca/downloads/list?&q=manual}{manual} of the \normindex{VOTCA package}~\cite{ruehle2009}. Setting the {\tt adress-interface-correction} to {\tt thermoforce} enabled the thermodynamic force correction and {\tt adress-tf-grp-names} defines the energy groups to act on.
+The force can be determined via an iterative procedure, which is described in detail in the \href{http://code.google.com/p/votca/downloads/list?&q=manual}{manual} of the \normindex{VOTCA package}~\cite{ruehle2009}. Setting the {\tt adress-interface-correction} to {\tt thermoforce} enables the thermodynamic force correction and\newline{\tt adress-tf-grp-names} defines the energy groups to act on.
 
 \section{{\gromacs} on GPUs}
 
