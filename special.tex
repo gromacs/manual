@@ -1331,6 +1331,7 @@ representation of it) than to modify the inner loops of the MD
 program.
 
 \subsection{User-specified potential functions}
+\label{subsec:userpot}
 You can also use your own \swapindex{potential}{function}s 
 without editing the {\gromacs} code. 
 The potential function should be according to the following equation
@@ -1613,7 +1614,7 @@ What is needed as well is a transition state optimizer.
 The adaptive resolution scheme~\cite{Praprotnik2005,Praprotnik2008} (\seeindex{\adress}{Adaptive Resolution Scheme}) couples two systems with different resolutions by a force interpolation scheme.
 In contrast to the mixed Quantum-Classical simulation techniques of the previous section, the number of high resolution particles is not fixed, but can vary over the simulation time.
 
-Below we discuss {\adress} for a coarse-grained and an atomistic representation of the same system, see \figref{adress} for illustration.
+Below we discuss {\adress} for a double resolution (atomistic and coarse grained) representation of the same system. See \figref{adress} for illustration.
 The details of implementation described in this section were published in~\cite{Junghans2010,Fritsch2012}.
 
 \begin{figure}
@@ -1626,7 +1627,7 @@ The details of implementation described in this section were published in~\cite{
 Every molecule needs a well-defined mapping point (usually the center of mass)
 but any other linear combination of particle coordinates is also sufficient. 
 In the topology the mapping point is defined by a virtual site. The forces in the coarse-grained region are functions of the mapping point positions only.
-In this implementation molecules are modeled by charge groups, which actually allows to have multiple mapping points per molecule, which can be useful for bigger molecules like polymers.
+In this implementation molecules are modeled by charge groups, which actually allows to have multiple mapping points per molecule. This can be useful for bigger molecules like polymers.
 
 The force between two molecules is given by~\cite{Praprotnik2005}
 \footnote{Note that the equation obeys Newton's third law, which is not the case for other interpolation schemes~\cite{DelleSite2007}.}:
@@ -1642,8 +1643,8 @@ The first part, which represents the explicit interaction of the molecules, can 
 \end{equation}
 where $\vec{F}^\mathrm{ex}_{ij}$ is the force between the $i$th atom  in  $\alpha$th molecule and the $j$th atom in the $\beta$th molecule, which is given by an explicit force field.
 The second part of \eqnref{interpolation} comes from the coarse-grained interaction of the molecules.
-The coarse-grained force field is usually derived from the atomistic system by structure-based coarse-graining (see \secref{cg-forcefields}). In the toplogy, the coarse-grained interaction is defined by the the mapping point virtual site (both tabulated and analtyical potentials can be used). To specify which atoms belong to a coarse-grained representation, energy groups are used.
-Each coarse-grained interaction has to be associated with a specifiy energy groups. The energy groups which are treated as coarse-grained interactions are then listed in {\tt adress_cg_grp_names}.
+The coarse-grained force field is usually derived from the atomistic system by structure-based coarse-graining (see \secref{cg-forcefields}). In the toplogy, the coarse-grained interaction is defined by the the mapping point virtual site (both tabulated and analytical potentials can be used). To specify which atoms belong to a coarse-grained representation, energy groups are used.
+Each coarse-grained interaction has to be associated with a specific energy group. The energy groups which are treated as coarse-grained interactions are then listed in {\tt adress_cg_grp_names}.
 The most important element of this interpolation (see \eqnref{interpolation}) is the adaptive weighting function (for illustration see \figref{adress}):
 \begin{equation}
 w(x)=
@@ -1657,9 +1658,6 @@ w(x)=
 which has a value between 0 and 1.
 This definition of $w$ gives a purely explicit force in the explicit region and a purely coarse-grained force in the coarse-grained region,
 so essentially \eqnref{interpolation} only the hybrid region has mixed interactions which would not appear in a standard simulation.
-Depending on the physical interest of the research, other functions could be implemented as long as the following boundary conditions are fulfilled:
-The function is 1) continuous, 2) monotonic and 3) has zero derivatives at the boundaries.
-
 In GROMACS a $\cos^2$-like function is implemented as a weighting function:
 \begin{equation}
 w(x)=
@@ -1671,7 +1669,8 @@ w(x)=
 \label{equ:wf}
 \end{equation}
 where $d_\mathrm{ex}$ and $d_\mathrm{hy}$ are the sizes of the explicit and the hybrid region, respectively.
-
+Depending on the physical interest of the research, other functions could be implemented as long as the following boundary conditions are fulfilled:
+The function is 1) continuous, 2) monotonic and 3) has zero derivatives at the boundaries.
 Spherical and one-dimensional splitting  of the simulation box has been implemented ({\tt adress-type} option)
 and depending on this, the distance $x$ to the center of the explicit region is calculated as follows:
 \begin{equation}
@@ -1692,11 +1691,109 @@ Note that the value of the weighting function depends exclusively on the mapping
 
 The interpolation of forces (see \eqnref{interpolation}) can produce inhomogeneities in the density and affect the structure of the system in the hybrid region.
 
-One way of reducing the inhomogeneities due to the force interpolation is the so-called thermodynamic force~\cite{Poblete2010}.
+One way of reducing the inhomogeneities due to the force interpolation is the so-called thermodynamic force (TF)~\cite{Poblete2010}.
 It consists of a~space-dependent external field applied in the region of interpolation in order to produce a flat density profile, based on thermodynamic consistency considerations. The force provides the amount of work necessary to compensate the difference in excess chemical potential responsible for the density artifacts.
-Its effect is exerted on the coarse-grained site of the molecules and can be used to correct local density inhomogeneities in the hybrid region.
-The force can also be used to couple explicit and coarse-grained regimes of different state points.
-The force can be determined via an iterative procedure, which is described in detail in the \href{http://code.google.com/p/votca/downloads/list?&q=manual}{manual} of the \normindex{VOTCA package}~\cite{ruehle2009}. Setting the {\tt adress-interface-correction} to {\tt thermoforce} enables the thermodynamic force correction and\newline{\tt adress-tf-grp-names} defines the energy groups to act on.
+The TF acts on the coarse-grained site of the molecules and can be used to correct local density inhomogeneities in the hybrid region.
+The thermodynamic force can be determined via an iterative procedure, which is described in detail in the \href{http://code.google.com/p/votca/downloads/list?&q=manual}{manual} of the \normindex{VOTCA package}~\cite{ruehle2009}. Setting the {\tt adress-interface-correction} to {\tt thermoforce} enables the TF correction and\newline{\tt adress-tf-grp-names} defines the energy groups to act on.
+
+\subsection{Example: Adaptive resolution simulation of water}\label{subsec:adressexample}
+In this section the set up of  an adaptive resolution simulation coupling atomistic SPC ~\cite{Berendsen81} water to its coarse-grained represenation will be explained (as used in \cite{Fritsch2012b}).
+The following steps are required to setup the simulation:
+\begin{itemize}
+\item Perform a reference all-atom simulation
+\item Create a coarse-grained representation and save it as tabulated interaction function 
+\item Create a hybrid topology for the SPC water
+\item Modify the atomistic coordinate file to include the coarse grained represenation
+\item Define the geometry of the adaptive simulation in the grompp input file
+\item Create an index file
+\end{itemize}
+The coarse-grained representation of the interaction is stored as tabulated interaction funtion see \ssecref{userpot}. The convention is to use the $C^{(12)}$  columns with the  $C^{(12)}$- coefficient set to 1. All other columns should be zero. The VOTCA manual has detailed instructions and a tutorial for spc water on how to coarse-grain the interaction using various techniques. 
+Here we named the coarse grained interaction CG, so the corresponding tabulated file is {\tt table_CG_CG.xvg}. To create the topology one can start from the atomistc topology file (e.g. share/gromacs/top/oplsaa.ff/spc.itp), we are assuming rigid water here. In the VOTCA tutorial the file is named {\tt hybrid_spc.itp}.
+The only difference to the atomistic toplogy is the addition of a coarse-grained virtual site:
+{\small
+\begin{verbatim}
+[ moleculetype ]
+; molname       nrexcl
+SOL             2
+
+[ atoms ]
+;   nr   type  resnr residue  atom   cgnr     charge       mass
+     1  opls_116   1    SOL     OW      1      -0.82
+     2  opls_117   1    SOL    HW1      1       0.41
+     3  opls_117   1    SOL    HW2      1       0.41
+     4     CG      1    SOL     CG      2       0
+
+
+[ settles ]
+; OW    funct   doh     dhh
+1       1       0.1     0.16330
+
+[ exclusions ]
+1       2       3
+2       1       3
+3       1       2
+
+[ virtual_sites3 ]
+; Site from funct a d
+4 1 2 3 1 0.05595E+00 0.05595E+00
+\end{verbatim}}
+The virtual site type 3 with the specified coefficients places the virtual site in the center of mass of the molecule (for larger molecules virtual_sitesn has to be used).
+We now need to include our modified water model in the topology file and define the type {\tt CG}. In {\tt topol.top}:
+{\small
+\begin{verbatim}
+#include "ffoplsaa.itp"
+
+[ atomtypes ]
+;name  mass        charge    ptype   sigma     epsilon
+ CG    0.00000     0.0000    V       1    0.25
+
+#include "hybrid_spc.itp"
+
+[ system ]
+Adaptive water
+[ molecules ]
+SOL    8507
+\end{verbatim}}
+The $\sigma$ and $\epsilon$ values coorsepond to $C_6=1$ and $C_{12}=1$ and thus the table file should contain the coarse-grained interaction in either the $C_6$ or $C_{12}$ column. In the example the OPLS forcfield is used where $\sigma$ and $\epsilon$ are specified.
+Note that for forcefields which define atomtypes directly in terms of $C_6$ and $C_{12}$ ( like {\tt gmx.ff} ) one can simply set $C_6=0$ and $C_{12}=1$. See section \ssecref{userpot} for more details on tabulated interactions. Since now the water molecule has a virtual site the coordinate file also needs to include that.
+{\small
+\begin{verbatim}
+adaptive water coordinates
+34028
+    1SOL     OW    1   0.283   0.886   0.647
+    1SOL    HW1    2   0.359   0.884   0.711
+    1SOL    HW2    3   0.308   0.938   0.566
+    1SOL     CG    4   0.289   0.889   0.646
+    1SOL     OW    5   1.848   0.918   0.082
+    1SOL    HW1    6   1.760   0.930   0.129
+    1SOL    HW2    7   1.921   0.912   0.150
+    1SOL     CG    8   1.847   0.918   0.088
+    (...)
+\end{verbatim}}
+This file can be created manually or using the VOTCA tool {\tt csg_map } with the {\tt --hybrid} option.\\
+In the grompp input file the AdResS feature needs to be enabled and the geometry defined.
+{\small
+\begin{verbatim}
+(...)
+; AdResS relevant options
+energygrps               = CG
+energygrp_table          = CG CG
+
+; Method for doing Van der Waals
+vdw-type                 = user
+
+adress                  = yes
+adress_type             = xsplit
+adress_ex_width         = 1.5
+adress_hy_width         = 1.5
+adress_interface_correction = off
+adress_reference_coords = 8 0 0
+adress_cg_grp_names = CG
+\end{verbatim}}
+
+Here we are defining an energy group {\tt CG} which consists of the coarse-grained virtual site.
+As discussed above, the coarse-grained interaction is usually tabulated. This requires the {\tt vdw-type} parameter to be set to {\tt user}. In the case where multicomponent systems are coarse-grained, an energy group has to be defined for each component. Note that all the energy groups defining coarse-grained representations have to be listed again in {\tt adress_cg_grp_names} to distinguish them from regular energy groups.\\
+The index file has to be updated to have a group CG which includes all the coarse-grained virtual sites. This can be done easily using the {\tt make_ndx} tool of gromacs.
 
 \section{{\gromacs} on GPUs}
 
