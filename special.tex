@@ -1627,7 +1627,7 @@ The details of implementation described in this section were published in~\cite{
 Every molecule needs a well-defined mapping point (usually the center of mass)
 but any other linear combination of particle coordinates is also sufficient. 
 In the topology the mapping point is defined by a virtual site. The forces in the coarse-grained region are functions of the mapping point positions only.
-In this implementation molecules are modeled by charge groups, which actually allows to have multiple mapping points per molecule. This can be useful for bigger molecules like polymers.
+In this implementation molecules are modeled by charge groups, which actually allows to have multiple mapping points per molecule. This can be useful for bigger molecules like polymers. In that case one has to also extend the AdResS description to bonded interactions~\cite{Praprotnik2011}, which will be implemented into Gromacs in one of the future versions.
 
 The force between two molecules is given by~\cite{Praprotnik2005}
 \footnote{Note that the equation obeys Newton's third law, which is not the case for other interpolation schemes~\cite{DelleSite2007}.}:
