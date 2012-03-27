@@ -2677,9 +2677,9 @@ When selecting the CHARMM force field in {\tt \normindex{pdb2gmx}} the default o
 \subsection{Coarse-grained force-fields}
 \index{force-field, coarse-grained}
 \label{sec:cg-forcefields}
+Coarse-graining is a systematic way of reducing the number of degrees of freedom representing a system of interest. To achieve this, typically whole groups of atoms are represented by single beads and the coarse-grained force fields describes their effective interactions. Depending on the choice of parameterization, the functional form of such an interaction can be complicated and often tabulated potentials are used.
 
-A coarse-grained force field is not just one specific force field (a set of parameter), but a set of (mostly tabulated) interactions. The coarse grained force field (less degrees of freedom) is designed to reproduce certain properties of an underlying high resolution system (many degrees of freedom), which can be an atomistic system or even an experimental course of setup.
-Depending on the properties to reproduce there are different methods to derive such force fields:
+Coarse-grained models are designed to reproduce certain properties of a reference system. This can be either a full atomistic model or even experimental data. Depending on the properties to reproduce there are different methods to derive such force fields. An incomplete list of methods is given below:
 \begin{itemize}
 \item Conserving free energies
 \begin{itemize}
@@ -2697,10 +2697,7 @@ Depending on the properties to reproduce there are different methods to derive s
 \end{itemize}
 \end{itemize}
 
-Note that this list is incomplete. There are software packages, based on GROMACS, which 
-offer an implementation of the above algorithms, i.e. the \normindex{VOTCA package}~\cite{ruehle2009}, which
-can be found under \href{http://www.votca.org}{www.votca.org}, has several coarse-graining 
-tutorials using GROMACS on this matter.
+Note that coarse-grained potentials are state dependent (e.g. temperature, density,...) and should be reparametrized depending on the system of interest and the simulation conditions. This can for example be done using the \normindex{Versatile Object-oriented Toolkit for Coarse-Graining Applications (VOTCA)}~\cite{ruehle2009}. The package was designed to asssists in systematic coarse-graining, provides implementations for most of the algorithms mentioned above and has a well tested interface to GROMACS. It is available as open source and further information can be found at \href{http://www.votca.org}{www.votca.org}.
 
 \subsection{MARTINI\index{Martini force field}}
 
