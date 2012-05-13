@@ -1552,6 +1552,12 @@ All bonded interactions are interpolated by linear interpolation
 of the interaction parameters. Non-bonded interactions can be
 interpolated linearly or via soft-core interactions.
 
+Starting in Gromacs 4.6, $\lambda$ is a vector, allowing different
+components of the free energy transformation to be carried out at
+different rates.  Coulomb, Lennard-Jones, bonded, and restraint terms
+can all be controlled independently, as described in the {\tt .mdp}
+options.
+
 \subsubsection{Harmonic potentials}
 The example given here is for the bond potential, which is harmonic
 in {\gromacs}. However,  these equations apply to the angle potential
@@ -1717,7 +1723,6 @@ in the {\tt .mdp} file), $p$ is the soft-core $\LAM$ power (set with
 $(C_{12}/C_6)^{1/6}$ or an input parameter ({\tt sc_sigma}) when $C_6$ 
 or $C_{12}$ is zero.
 
-
 For intermediate $\LAM$, $r_A$ and $r_B$ alter the interactions very little
 for $r > \alpha^{1/6} \sigma$ and quickly switch the soft-core
 interaction to an almost constant value for smaller $r$ (\figref{softcore}). 
@@ -1747,18 +1752,48 @@ The contribution to the derivative of the free energy is:
 
 The original GROMOS Lennard-Jones soft-core function~\cite{Beutler94}
 uses $p=2$, but $p=1$ gives a smoother $\partial H/\partial\LAM$ curve.
-When the changes between the two states involve both the disappearing
-and appearing of atoms, it is important that the overlapping of atoms
-happens around $\LAM=0.5$. This can usually be achieved with
-$\alpha$$\approx0.7$ for $p=1$ and $\alpha$$\approx1.5$ for $p=2$.
+%When the changes between the two states involve both the disappearing
+%and appearing of atoms, it is important that the overlapping of atoms
+%happens around $\LAM=0.5$. This can usually be achieved with
+%$\alpha$$\approx0.7$ for $p=1$ and $\alpha$$\approx1.5$ for $p=2$.
+%MRS: this is now eliminated as of 4.6, since changes between atoms are done linearly.
 
 Another issue that should be considered is the soft-core effect of hydrogens
 without Lennard-Jones interaction. Their soft-core $\sigma$ is
-set with {\tt sc_sigma} in the {\tt .mdp} file. These hydrogens
+set with {\tt sc-sigma} in the {\tt .mdp} file. These hydrogens
 produce peaks in $\partial H/\partial\LAM$ at $\LAM$ is 0 and/or 1 for $p=1$
-and close to 0 and/or 1 with $p=2$. Lowering {\tt\mbox{sc_sigma}} will decrease
+and close to 0 and/or 1 with $p=2$. Lowering {\tt\mbox{sc-sigma}} will decrease
 this effect, but it will also increase the interactions with hydrogens
 relative to the other interactions in the soft-core state.
+
+When soft core potentials are selected (by setting {\tt sc-alpha} >
+0), and the Coulomb and Lennard-Jones potentials are turned on or off
+sequentially, then the Coulombic interaction is turned off linearly,
+rather than using soft core interactions, which should be less
+statistically noisy in most cases.  This behavior can be overwritten
+by using the mdp option {\tt sc-coul} to 'yes'. Additionally, the
+soft-core interaction potential is only applied when either the A or B
+state has zero interaction potential.  If both A and B states have
+nonzero interaction potential, default linear scaling described above
+is used. When both Coulombic and Lennard-Jones interactions are turned
+off simultaneously, a soft-core potential is used, and a hydrogen is
+being introduced or deleted, the sigma is set to {\tt sc-sigma-min},
+which itself defaults to {\tt sc-sigma-default}.
+
+Recently, a new formulation of the soft core forma has been derived
+that is in many cases be flatter and lower variance than the softcore
+path described above.~\cite{Pham2011,Pham2012} Specifically, we have:
+\bea
+V_{sc}(r) &=& \LL V^A(r_A) + \LAM V^B(r_B)
+    \\
+r_A &=& \left(\alpha \sigma_A^{48} \LAM^p + r^{48} \right)^\frac{1}{48}
+    \\
+r_B &=& \left(\alpha \sigma_B^{48} \LL^p + r^{48} \right)^\frac{1}{48}
+\eea
+This ``1-1-48'' path is also implemented in Gromacs. Note that for this path the soft core $\alpha$
+should satisfy $0.001 < \alpha < 0.003$,rather than $\alpha \approx
+0.5$.
+
 %} % Brace matches ifthenelse test for gmxlite
 
 %\ifthenelse{\equal{\gmxlite}{1}}{}{
@@ -2177,13 +2212,16 @@ cut-off for Lennard-Jones or Buckingham interactions.
 We assume that the cut-off is
 so long that the repulsion term can safely be neglected, and therefore
 only the dispersion term is taken into account. Due to the nature of
-the dispersion interaction, energy and pressure corrections are both
-negative. While the energy correction is usually small, it may be
-important for free energy calculations. In contrast, the pressure correction
-is very large and can not be neglected. Although it is, in
+the dispersion interaction (we are truncating at potential proportional
+to $-r^{-6}$, energy and pressure corrections are both negative. While
+the energy correction is usually small, it may be important for free
+energy calculations where differences between two different Hamiltonians
+are considered. In contrast, the pressure correction is very large and
+can not neglected under any circumstances where a correct pressure is
+required, especially for any pressure simulations. Although it is, in
 principle, possible to parameterize a force field such that the pressure
-is close to 1 bar even without correction, such a method makes the
-parameterization dependent on the cut-off and is therefore
+is close to the desired experimental value without correction, such a
+method makes the parameterization dependent on the cut-off and is therefore
 undesirable. {\bf Note} that it is not appropriate to use the long-range
 correction to the dispersion without using either a
 \normindex{reaction field} method or a proper long-range

@@ -469,7 +469,7 @@ that uses zero for all solute non-bonded parameters, {\ie} charges and LJ parame
 However, the free energy difference between the A and
 B states is not the total hydration free energy.  One has to
 add the free energy for reintroducing the internal Coulomb and 
-LJ interactions in the solute. This second step can be combined with
+LJ interactions in the solute when in vacuum. This second step can be combined with
 the first step when the Coulomb and LJ interactions within
 the solute are not modified. For this purpose, there is a pairs
 function type 2, which is identical to function type 1, except
@@ -481,6 +481,12 @@ It uses the unscaled charges and the non-bonded LJ parameters;
 it also only uses the A-state parameters. {\bf Note} that
 one should add exclusions for all atom pairs listed in {\tt [~pairs_nb~]},
 otherwise such pairs will also end up in the normal neighbor lists.
+
+Alternatively, this same behavior can be achieved without ever
+touching the topology, by using the {\tt couple-moltype}, {\tt
+  couple-lambda0}, {\tt couple-lambda1}, and {\tt couple-intramol}
+keywords.  See sections \ssecref{fecalc} and \ssecref{dgimplement} for
+more information.
 
 All three pair types always use plain Coulomb interactions,
 even when Reaction-field, PME, Ewald or shifted Coulomb interactions
@@ -1209,7 +1215,7 @@ Name of interaction              & Topology file directive          & num.  & fu
 \label{tab:topfile2}\footnotetext[1]{The required number of atom indices for this directive}\footnotetext[2]{The index to use to select this function type}\footnotetext[3]{Indicates which of the parameters for this interaction can be interpolated during free energy calculations}\footnotetext[4]{This interaction type will be used by {{\tts grompp}} for generating exclusions}\footnotetext[5]{This interaction type can be converted to constraints by {{\tts grompp}}}\footnotetext[7]{The combination rule determines the type of LJ parameters, see~\ssecref{nbpar}}\footnotetext[6]{No connection, and so no exclusions, are generated for this interaction}bond
                                    & {\tts bonds}\fnm{4},\fnm{5}    & 2     & 1     & $b_0$ (nm); $k_b$ (\kJmolnm{-2})                      & all        & \ssecref{harmonicbond} \\
 G96 bond                           & {\tts bonds}\fnm{4},\fnm{5}    & 2     & 2     & $b_0$ (nm); $k_b$ (\kJmolnm{-4})                      & all        & \ssecref{G96bond} \\
-Morse                              & {\tts bonds}\fnm{4},\fnm{5}    & 2     & 3     & $b_0$ (nm); $D$ (\kJmol); $\beta$ (nm$^{-1}$)         &            & \ssecref{Morsebond} \\
+Morse                              & {\tts bonds}\fnm{4},\fnm{5}    & 2     & 3     & $b_0$ (nm); $D$ (\kJmol); $\beta$ (nm$^{-1}$)         & all        & \ssecref{Morsebond} \\
 cubic bond                         & {\tts bonds}\fnm{4},\fnm{5}    & 2     & 4     & $b_0$ (nm); $C_{i=2,3}$ (\kJmolnm{-i})                &            & \ssecref{cubicbond} \\
 connection                         & {\tts bonds}\fnm{4}            & 2     & 5     &                                                       &            & \tsecref{excl} \\
 harmonic potential                 & {\tts bonds}                   & 2     & 6     & $b_0$ (nm); $k_b$ (\kJmolnm{-2})                      & all        & \ssecref{harmonicbond},\tsecref{excl} \\
@@ -1224,7 +1230,7 @@ angle                              & {\tts angles}\fnm{5}           & 3     & 1 
 G96 angle                          & {\tts angles}\fnm{5}           & 3     & 2     & $\theta_0$ (deg); $k_\theta$ (\kJmol)                 & all        & \ssecref{G96angle} \\
 cross bond-bond                    & {\tts angles}                  & 3     & 3     & $r_{1e}$, $r_{2e}$ (nm); $k_{rr'}$ (\kJmolnm{-2})     &            & \ssecref{bondbondcross} \\
 cross bond-angle                   & {\tts angles}                  & 3     & 4     & $r_{1e}$, $r_{2e}$ $r_{3e}$ (nm); $k_{r\theta}$ (\kJmolnm{-2}) &   & \ssecref{bondanglecross} \\
-Urey-Bradley                       & {\tts angles}\fnm{5}           & 3     & 5     & $\theta_0$ (deg); $k_\theta$ (\kJmol); $r_{13}$ (nm); $k_{UB}$ (\kJmolnm{-2}) & & \ssecref{Urey-Bradley} \\
+Urey-Bradley                       & {\tts angles}\fnm{5}           & 3     & 5     & $\theta_0$ (deg); $k_\theta$ (\kJmol); $r_{13}$ (nm); $k_{UB}$ (\kJmolnm{-2}) & all & \ssecref{Urey-Bradley} \\
 quartic angle                      & {\tts angles}\fnm{5}           & 3     & 6     & $\theta_0$ (deg); $C_{i=0,1,2,3,4}$ (\kJmolrad{-i})   &            & \ssecref{quarticangle} \\
 tabulated angle                    & {\tts angles}                  & 3     & 8     & table number ($\geq 0$); $k$ (\kJmol)                 & $k$        & \ssecref{tabulatedinteraction} \\
 proper dihedral                    & {\tts dihedrals}               & 4     & 1     & $\phi_s$ (deg); $k_\phi$ (\kJmol); multiplicity       & $\phi,k$   & \ssecref{properdihedral} \\
@@ -1250,7 +1256,7 @@ N-body virtual site (COW)          & {\tts virtual_sitesn}          & 1     & 3 
 position restraint                 & {\ttss position_restraints}    & 1     & 1     & $k_{x}$, $k_{y}$, $k_{z}$ (\kJmolnm{-2}) & all                     & \ssecref{positionrestraint} \\
 %restraint potential                & {\tts bonds}                   & 2     & 10    & low, up$_1$, up$_2$ (nm); $k_{dr}$ (\kJmolnm{-2})     &            & \ssecref{} \\
 distance restraint                 & {\ttss distance_restraints}    & 2     & 1     & type; label; low, up$_1$, up$_2$ (nm); weight ()      &            & \ssecref{distancerestraint} \\
-dihedral restraint                 & {\ttss dihedral_restraints}    & 4     & 1     & type; label; $\phi_0$ (deg); $\Delta\phi$ (deg); weight () &       & \ssecref{dihedralrestraint} \\
+dihedral restraint                 & {\ttss dihedral_restraints}    & 4     & 1     & $\phi_0$ (deg); $\Delta\phi$ (deg); &    all   & \ssecref{dihedralrestraint} \\
 orientation restraint              & {\ttss orientation_restraints} & 2     & 1     & exp.; label; $\alpha$; $c$ (U nm$^\alpha$); obs. (U); weight (U$^{-1}$) & & \ssecref{orientationrestraint} \\
 angle restraint                    & {\ttss angle_restraints}       & 4     & 1     & $\theta_0$ (deg); $k_c$ (\kJmol); multiplicity        & $\theta,k$ & \ssecref{anglerestraint} \\
 angle restraint (z)                & {\ttss angle_restraints_z}     & 2     & 1     & $\theta_0$ (deg); $k_c$ (\kJmol); multiplicity        & $\theta,k$ & \ssecref{anglerestraint} \\
@@ -1655,7 +1661,11 @@ either on the line or in the bonded types,
 {\tt grompp} uses the A-state parameters and issues a warning.
 For free energy calculations, all or no parameters for topology B
 ($\lambda = 1$) should be added on the same line, after the normal
-parameters, in the same order as the normal parameters.
+parameters, in the same order as the normal parameters.  
+From {\gromacs} 4.6 onward, if $\lambda$ is treated as a vector, then 
+the {\tt bonded-lambdas} component controls all bonded terms that are 
+not explicitly labeled as restraints.  Restrain terms are controlled 
+by the {\tt restraint-lambdas} component.
 
 \begin{table}
 \centerline{
@@ -1784,7 +1794,12 @@ between two methanes in water, by combining the two methanes into one ``molecule
 correspond to the chemical definition of a molecule.  In {\gromacs}, a ``molecule''
 can be defined as any group of atoms that one wishes to consider simultaneously.
 The added constraint is of function type 2, which means that it is not
-used for generating exclusions (see~\secref{excl}).\\
+used for generating exclusions (see~\secref{excl}). 
+Note that the constrain term is included in the derivative term, and is 
+specifically included in the {\tt bonded-lambdas} component. However, the free 
+energy for changing constraints is {\em not} included in the potential energy 
+differences used for BAR and MBAR, as this requires reevaluating the energy at 
+each of the constraint components.  This functionality is planned for later versions.\\
 
 {\small
 \begin{verbatim}
@@ -1998,5 +2013,13 @@ since they are not well-tested.}
 % LocalWords:  Loof Buuren Berendsen DDeloof DeLoof VanBuuren endif feia topfe
 % LocalWords:  propanols pentanes ffG PropPent typeB chargeB massB ga gd mols
 % LocalWords:  Propanol Pentane methanes aug natoms residuenr residuename vx vy
-% LocalWords:  atomname atomnr vz Fortran confin ntx GROMOS nbfunc
+% LocalWords:  atomname atomnr vz Fortran confin ntx GROMOS nbfunc GROningen ff
 % LocalWords:  fudgeLJ fudgeQQ ffgmxnb ffgmxbon tdb ffbonded ffnonbonded nonbond
+% LocalWords:  MAchine BIOSON Groningen Spoel Drunen Comp Phys Comm trr AA fdn
+% LocalWords:  aliphatic CHARMM polarisability quadrupole tt normvsbds Waals jj
+% LocalWords:  pairinteractions num Buckingham rcl trans Intramolecular Lennard
+% LocalWords:  excl gen solute unscaled moltype intramol dgimplement Qiu HCT rt
+% LocalWords:  Onufriev OBC LINCS doc xxx residuetypes polyatomic co rotatable
+% LocalWords:  heme cysteine lysine CH NH LP amine nitrenyl ethynyl vsd MCH MNH
+% LocalWords:  chainsep resA atomA nbondsA resB atomB nbondsB newresA newresB
+% LocalWords:  rad deg lcc cc
