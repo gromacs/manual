@@ -825,8 +825,8 @@ still identical; it makes a difference in the way the the temperature
 of the simulations are {\em interpreted}, but {\em not} in the
 trajectories that are produced.  Although the kinetic energy is more
 accurate with the half-step-averaged method, meaning that it changes
-less as the timestep gets large, it is also more noisy.  The rmsd
-variance of the total energy of the system (sum of kinetic plus
+less as the timestep gets large, it is also more noisy.  The RMS deviation
+of the total energy of the system (sum of kinetic plus
 potential) in the half-step-averaged kinetic energy case will be
 higher (about twice as high in most cases) than the full-step kinetic
 energy.  The drift will still be the same, however, as again, the
@@ -925,11 +925,13 @@ as a function of the long-range time step length for the irreversible
 While direct use of molecular dynamics gives rise to the NVE (constant
 number, constant volume, constant energy ensemble), most quantities
 that we wish to calculate are actually from a constant temperature
-(NVT) ensemble. {\gromacs} can use either the {\em weak-coupling}
-scheme of Berendsen~\cite{Berendsen84}, the extended ensemble
-Nos{\'e}-Hoover scheme~\cite{Nose84,Hoover85}, or a velocity-rescaling
-scheme~\cite{Bussi2007a} to simulate constant temperature,
-with advantages of each of the schemes laid out below.
+(NVT) ensemble, also called the canonical ensemble. {\gromacs} can use
+the {\em weak-coupling} scheme of Berendsen~\cite{Berendsen84},
+stochastic randomization through the Andersen
+thermostat~\cite{Andersen80}, the extended ensemble Nos{\'e}-Hoover
+scheme~\cite{Nose84,Hoover85}, or a velocity-rescaling
+scheme~\cite{Bussi2007a} to simulate constant temperature, with
+advantages of each of the schemes laid out below.
 
 There are several other reasons why it might be necessary to control
 the temperature of the system (drift during equilibration, drift as a
@@ -967,10 +969,10 @@ conservative dynamics.
 
 The Berendsen thermostat suppresses the fluctuations of the kinetic
 energy.  This means that one does not generate a proper canonical
-ensemble, so rigorously, the sampling will indeed be incorrect.  This
+ensemble, so rigorously, the sampling will be incorrect.  This
 error scales with $1/N$, so for very large systems most ensemble
 averages will not be affected significantly, except for the
-distribution of the kinetic energy itself.  However, fluctution
+distribution of the kinetic energy itself.  However, fluctuation
 properties, such as the heat capacity, will be affected.  A similar
 thermostat which does produce a correct ensemble is the velocity
 rescaling thermostat~\cite{Bussi2007a} described below.
@@ -1017,6 +1019,31 @@ the advantage of the Berendsen thermostat: first order decay of
 temperature deviations and no oscillations.
 When an $NVT$ ensemble is used, the conserved energy quantity
 is written to the energy and log file.  
+
+\subsubsection{\normindex{Andersen thermostat}}
+One simple way to maintain a thermostatted ensemble is to take an
+$NVE$ integrator and periodically re-select the velocities of the
+particles from a Maxwell-Boltzmann distribution.~\cite{Andersen80}.
+This can either be done by randomizing all the velocities
+simultaneously (massive collision) every $\tau_T/\Dt$ steps, or by
+randomizing every particle with some small probability every timestep,
+equal to $\Dt/\tau$, where in both cases $\Dt$ is the timestep and
+$tau_T$ is a characteristic coupling time scale.
+
+Because of the way constraints operate, all particles in the same
+constraint group must be re-randomized simultaneously.  This
+thermostat is also only possible with velocity Verlet algorithms,
+because it operates directly on the velocities at each timestep.
+
+This algorithm avoids some of the ergodicity issues of other
+algorithms, as energy cannot flow back and forth between energetically
+decoupled components of the system as in velocity scaling motions.
+However, it can slow down the kinetics of system by randomizing
+correlated motions of the system, including slowing sampling when
+$\tau_T$ is at moderate levels (less than 10 ps). This algorithm
+should therefore generally not be used when examining kinetics of the
+system, but can avoid ergodicity problems of scaling problems when
+examining thermodynamic properties.
 
 % \ifthenelse{\equal{\gmxlite}{1}}{}{
 \subsubsection{\swapindex{Nos{\'e}-Hoover}{temperature coupling}}
@@ -1098,7 +1125,7 @@ chain approach was developed, where each of the Nos{\'e}-Hoover
 thermostats has its own Nos{\'e}-Hoover thermostat controlling its
 temperature.  In the limit of an infinite chain of thermostats, the
 dynamics are guaranteed to be ergodic. Using just a few chains can
-greatly improve the ergodicity, but recent reseach has shown that the
+greatly improve the ergodicity, but recent research has shown that the
 system will still be nonergodic, and it is still not entirely clear
 what the practical effect of this~\cite{Cooke2008}. Currently, the
 default number of chains is 10, but this can be controlled by the
@@ -1609,9 +1636,9 @@ The trajectory file contains frames that could include positions,
 velocities and/or forces, as well as information about the dimensions
 of the simulation volume, integration step, integration time, etc. The
 interpretation of the time varies with the integrator chosen, as
-described above. For velocity-Verlet integrators, velocities labelled
+described above. For velocity-Verlet integrators, velocities labeled
 at time $t$ are for that time. For other integrators (e.g. leap-frog,
-stochastic dynamics), the velocities labelled at time $t$ are for time
+stochastic dynamics), the velocities labeled at time $t$ are for time
 $t - \hDt$.
 
 Since the trajectory
@@ -2205,8 +2232,8 @@ we can again use \eqnref{ddg} to compute the desired property.
 \newcommand{\sA}{^{\mathrm{A}}}
 \newcommand{\sB}{^{\mathrm{B}}}
 Free energy differences between two molecular species can
-be calculated in {\gromacs} using the ``slow-growth'' method. In fact,
-such free energy differences between different molecular species are
+be calculated in {\gromacs} using the ``slow-growth'' method.
+Such free energy differences between different molecular species are
 physically meaningless, but they can be used to obtain meaningful
 quantities employing a thermodynamic cycle.
 The method requires a simulation during which the Hamiltonian of the
@@ -2292,7 +2319,7 @@ no contribution from the kinetic energy at all; otherwise the
 integrated contribution to the free energy is $-\frac{3}{2} k_BT \ln
 (m\sB/m\sA)$. {\bf Note} that this is only true in the absence of constraints.
 
-\subsection{\normindex{Thermodynamic integration and BAR}}  
+\subsection{\normindex{Thermodynamic integration and BAR/MBAR}}
 {\gromacs} offers the possibility to integrate eq.~\ref{eq:delA} or
 eq. \ref{eq:delG} in one simulation over the full range from A to
 B. However, if the change is large and insufficient sampling can be
@@ -2307,7 +2334,9 @@ by an appropriate numerical integration procedure.
 
 {\gromacs} now also supports the use of Bennett's Acceptance Ratio~\cite{Bennett1976}
 for calculating values of $\Delta$G for transformations from state A to state B using
-the program {\tt \normindex{g_bar}}.
+the program {\tt \normindex{g_bar}}. The same data can also be used to calculate free
+energies using MBAR~\cite{Shirts2008}, though the analysis currently requires external tools from
+the external {\tt pymbar} package, at https://SimTK.org/home/pymbar.
 
 The $\lambda$-dependence for the force-field contributions is
 described in detail in section \secref{feia}.
@@ -2383,11 +2412,43 @@ In most cases the differences in volume are so small that the second
 term is negligible. It only plays a role when the difference between
 $P_1$ and $P_2$ is large or in phase transitions.
 
-Replica exchange is an option of the {\tt mdrun} program. It will only
-work when MPI is installed, due to the inherent parallelism in the
-algorithm. For efficiency each replica can run on a separate node.
-See the manual page of {\tt mdrun} on how to use it.
-% } % Brace matches ifthenelse test for gmxlite
+Hamiltonian replica exchange is also supported in {\gromacs}.  In
+Hamiltonian replica exchange, each replica has a different
+Hamiltonian, defined by the free energy pathway specified for the simulation.  The
+exchange probability to maintain the correct ensemble probabilities is:
+\beq P(1 \leftrightarrow 2)=\min\left(1,\exp\left[
+    \left(\frac{1}{k_B T} - \frac{1}{k_B T}\right)((U_1(x_2) - U_1(x_1)) + (U_2(x_1) - U_2(x_2)))
+\right]
+\right)
+\eeq
+The separate Hamiltonians are defined by the free energy functionality
+of Gromacs, with swaps made between the different values of
+$\lambda$ defined in the mdp file.
+
+Hamiltonian and temperature replica exchange can also be performed
+simultaneously, using the acceptance criteria:
+\beq
+P(1 \leftrightarrow 2)=\min\left(1,\exp\left[
+\left(\frac{1}{k_B T} - \right)(\frac{U_1(x_2) - U_1(x_1)}{k_B T_1} + \frac{U_2(x_1) - U_2(x_2)}{k_B T_2})
+ \right] \right)
+\eeq
+
+Gibbs sampling replica exchange has also been implemented in
+{\gromacs}~\cite{Chodera2011}.  In Gibbs sampling replica exchange, all
+possible pairs are tested for exchange, allowing swaps between
+replicas that are not neighbors.
+
+Gibbs sampling replica exchange requires no additional potential
+energy calculations.  However there is an additional communication
+cost in Gibbs sampling replica exchange, as for some permutations,
+more than one round of swaps must take place.  In some cases, this
+extra communication cost might affect the efficiency.
+
+All replica exchange variants are options of the {\tt mdrun}
+program. It will only work when MPI is installed, due to the inherent
+parallelism in the algorithm. For efficiency each replica can run on a
+separate node.  See the manual page of {\tt mdrun} on how to use these
+multinode features.
 
 % \ifthenelse{\equal{\gmxlite}{1}}{}{
 
@@ -2421,6 +2482,41 @@ see \appref{progman} for the manual page of {\tt make_edi}.
 The generated {\tt edi} input file is then passed to {\tt mdrun}.
 
 % } % Brace matches ifthenelse test for gmxlite
+
+% \ifthenelse{\equal{\gmxlite}{1}}{}{
+\section{\normindex{Expanded Ensemble}}
+
+In an expanded ensemble simulation~\cite{Lyubartsev1992}, both the coordinates and the
+thermodynamic ensemble are treated as configuration variables that can
+be sampled over.  The probability of any given state can be written as:
+\beq
+P(\vec{x},k) \propto \exp\left(-\beta_k U_k + g_k\right),
+\eeq
+where $\beta_k = \frac{1}{k_B T_k}$ is the $\beta$ corresponding to the $k$th
+thermodynamic state, and $g_k$ is a user-specified weight factor corresponding
+to the $k$th state.  This space is therefore a {\em mixed}, {\em generalized}, or {\em
+  expanded} ensemble which samples from multiple thermodynamic
+ensembles simultaneously. $g_k$ is chosen to give a specific weighting
+of each subensemble in the expanded ensemble, and can either be fixed,
+or determined by an iterative procedure. The set of $g_k$ is
+frequently chosen to give each thermodynamic ensemble equal
+probability, in which case $g_k$ is equal to the free energy in
+non-dimensional units, but they can be set to arbitrary values as
+desired.  Several different algorithms can be used to equilibrate
+these weights, described in the mdp option listings.
+% } % Brace matches ifthenelse test for gmxlite
+
+In {\gromacs}, this space is sampled by alternating sampling in the $k$
+and $\vec{x}$ directions.  Sampling in the $\vec{x}$ direction is done
+by standard molecular dynamics sampling; sampling between the
+different thermodynamics states is done by Monte Carlo, with several
+different Monte Carlo moves supported. The $k$ states can be defined
+by different temperatures, or choices of the free energy $\lambda$
+variable, or both.  Expanded ensemble simulations thus represent a
+serialization of the replica exchange formalism, allowing a single
+simulation to explore many thermodynamic states.
+
+
 
 % This stuff is quite outdated now.
 %\ifthenelse{\equal{\gmxlite}{1}}{}{
@@ -2826,13 +2922,14 @@ but differing slightly between the three Born radii models.
 % LocalWords:  zy zz se barostat compressibilities MTTK NPT Martyna al isobaric
 % LocalWords:  Tuckerman vir PV fkT iLt iL Liouville NHC Eq baro mu trj mol bc
 % LocalWords:  freezegroup Shannon's polarizability Overhauser barostats iLn KE
-% LocalWords:  negligibly thermostatted Tobias  rhombic maxwell et
+% LocalWords:  negligibly thermostatted Tobias  rhombic maxwell et xtc TC
 % LocalWords:  waals LINCS holonomic plincs lincs unc ang SA Langevin SD amu BD
 % LocalWords:  bfgs Broyden Goldfarb Shanno mkT kJ DFLEXIBLE Nocedal diag nmeig
 % LocalWords:  diagonalization anaeig nmens covanal ddg feia BT dp dq pV dV dA
 % LocalWords:  NpT eq stepsize REMD constrainted website Okabe MPI covar edi dd
 % LocalWords:  progman NMR ddcells innerloops ddtric tric dds rdd conf rcon est
-% LocalWords:  mb PP MPMD ddorder pp cartesian grompp npme parallelizable
-% LocalWords:  macromolecule nstlist vacuo parallelization dof indices
+% LocalWords:  mb PP MPMD ddorder pp cartesian grompp npme parallelizable edr
+% LocalWords:  macromolecule nstlist vacuo parallelization dof indices MBAR
 % LocalWords:  TOL numerics parallelized eigenvectors dG parallelepipeds VdW np
-% LocalWords:  Coul multi solvation HCT OBC solv cav vdw Schaefer
+% LocalWords:  Coul multi solvation HCT OBC solv cav vdw Schaefer symplectic
+% LocalWords:  pymbar multinode subensemble Monte solute subst
