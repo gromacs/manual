@@ -29,6 +29,89 @@
 \chapter{Special Topics}
 \label{ch:special}
 
+
+\section{Free energy implementation}
+\label{sec:dgimplement}
+For free energy calculations, there are two things that must be
+specified; the end states, and the pathway connecting the end states.
+The end states can be specified in two ways.  The most straightforward
+is through the specification of end states in the topology file.  Most
+potential forms support both an $A$ state and a $B$ state. Whenever both
+states are specified, then the $A$ state corresponds to the initial free
+energy state, and the $B$ state corresponds to the final state.
+
+In some cases, the end state can also be defined in some cases without
+altering the topology, solely through the {\tt .mdp} file, through the use
+of the {\tt couple-moltype},{\tt couple-lambda0}, {\tt couple-lambda1}, and
+{\tt couple-intramol} mdp keywords.  Any molecule type selected in
+{\tt couple-moltype} will automatically have a $B$ state implicitly
+constructed (and the $A$ state redefined) according to the {\tt couple-lambda} 
+keywords. {\tt couple-lambda0} and {\tt couple-lambda1} define the nonbonded 
+parameters that are present in the $A$ state ({\tt couple-lambda0}) 
+and the $B$ state ({\tt couple-lambda1}).  The choices are 'q','vdw', and 
+'vdw-q'; these indicate the Coulombic, van der Waals, or both parameters 
+that are turned on in the respective state.
+
+Once the end states are defined, then the path between the end states
+has to be defined. This path is defined solely in the .mdp file.
+Starting in 4.6, $lambda$ is a vector of components, with Coulumbic,
+van der Waals, bonded, restraint, and mass components all able to be
+adjusted independently.  This makes it possible to turn off the
+Coulombic term linearly, and then the van der Waals using soft core,
+all in the same simulation.  This is especially useful for replica
+exchange or expanded ensemble simulations, where it is important to
+sample all the way from interacting to noninteracting states in the
+same simulation to improve sampling.
+
+{\tt fep-lambdas} is the default array of $\lambda$ values ranging
+from 0 to 1.  All of the other lambda arrays use the values in this
+array if they are not specified.  The previous behavior, where the
+pathway is controlled by a single $\lambda$ variable, can be preserved
+by using only {\tt fep-lambdas} to define the pathway.
+
+For example, if you wanted to first to change the Coulombic terms,
+then the van der Waals terms, changing bonded at the same time rate as
+the van der Waals, but changing the restraints throughout the first
+two-thirds of the simulation, then you could use this $\lambda$ vector:
+
+\begin{verbatim}
+coul-lambdas           = 0.0 0.2 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0
+vdw-lambdas            = 0.0 0.0 0.0 0.0 0.4 0.5 0.6 0.7 0.8 1.0
+bonded-lambdas         = 0.0 0.0 0.0 0.0 0.4 0.5 0.6 0.7 0.8 1.0
+restraint-lambdas      = 0.0 0.0 0.1 0.2 0.3 0.5 0.7 1.0 1.0 1.0
+\end{verbatim}
+
+This is also equivalent to:
+
+\begin{verbatim}
+fep-lambdas            = 0.0 0.0 0.0 0.0 0.4 0.5 0.6 0.7 0.8 1.0
+coul-lambdas           = 0.0 0.2 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0
+restraint-lambdas      = 0.0 0.0 0.1 0.2 0.3 0.5 0.7 1.0 1.0 1.0
+\end{verbatim}
+The {\tt fep-lambda array}, in this case, is being used as the default to
+fill in the bonded and van der Waals $\lambda$ arrays.  Usually, it's best to fill
+in all arrays explicitly, just to make sure things are properly
+assigned.
+
+If you want to turn on only restraints going from $A$ to $B$, then it would be:
+\begin{verbatim}
+restraint-lambdas      = 0.0 0.1 0.2 0.4 0.6 1.0
+\end{verbatim}
+and all of the other components of the $\lambda$ vector would be left in the $A$ state.
+
+To compute free energies with a vector $\lambda$ using
+thermodynamic integration, then the TI equation becomes vector equation:
+\beq
+\Delta F = \int \langle \nabla H \rangle \cdot d\vec{\lambda}
+\eeq
+or for finite differences:
+\beq
+\Delta F \approx \int \sum \langle \nabla H \rangle \cdot \Delta\lambda
+\eeq
+
+The external {\tt pymbar} script downloaded from https://SimTK.org/home/pymbar can
+compute this integral automatically from the {\gromacs} dhdl.xvg output.
+
 \section{Potential of mean force}
 
 A potential of mean force (PMF) is a potential that is obtained
@@ -155,7 +238,7 @@ works for distances defined in one dimension, and the cylinder is
 oriented with its long axis along this one dimension. A second cylinder
 can be defined with {\tt r_0}, with a linear switch function that weighs
 the contribution of atoms between {\tt r_0} and {\tt r_1} with
-distance. This smooths the effects of atoms moving in and out of the
+distance. This smoothes the effects of atoms moving in and out of the
 cylinder (which causes jumps in the pull forces).
 
 \begin{figure}
@@ -247,7 +330,7 @@ is small compared to the bond lengths.
 
 This module can be used to enforce the rotation of a group of atoms, as {\eg}
 a protein subunit. There are a variety of rotation potentials, among them
-complex ones that allow flexible adaptions of both the rotated subunit as
+complex ones that allow flexible adaptations of both the rotated subunit as
 well as the local rotation axis during the simulation. An example application 
 can be found in ref. \cite{Kutzner2011}.
 
@@ -892,7 +975,7 @@ measures only angular differences, not radial ones.
 \subsubsection*{Angle Determination by Searching the Energy Minimum}
 Alternatively, for {\tt rot\_fit\_method = potential}, the angle of the rotation 
 group is determined as the angle for which the rotation potential energy is minimal.
-Therfore, the used rotation potential is additionally evaluated for a set of angles 
+Therefore, the used rotation potential is additionally evaluated for a set of angles 
 around the current reference angle. In this case, the {\tt rotangles.log} output file
 contains the values of the rotation potential at the chosen set of angles, while 
 {\tt rotation.xvg} lists the angle with minimal potential energy.
@@ -1643,7 +1726,7 @@ The first part, which represents the explicit interaction of the molecules, can 
 \end{equation}
 where $\vec{F}^\mathrm{ex}_{ij}$ is the force between the $i$th atom  in  $\alpha$th molecule and the $j$th atom in the $\beta$th molecule, which is given by an explicit force field.
 The second part of \eqnref{interpolation} comes from the coarse-grained interaction of the molecules.
-The coarse-grained force field is usually derived from the atomistic system by structure-based coarse-graining (see \secref{cg-forcefields}). In the toplogy, the coarse-grained interaction is defined by the the mapping point virtual site (both tabulated and analytical potentials can be used). To specify which atoms belong to a coarse-grained representation, energy groups are used.
+The coarse-grained force field is usually derived from the atomistic system by structure-based coarse-graining (see \secref{cg-forcefields}). In the topology, the coarse-grained interaction is defined by the the mapping point virtual site (both tabulated and analytical potentials can be used). To specify which atoms belong to a coarse-grained representation, energy groups are used.
 Each coarse-grained interaction has to be associated with a specific energy group. The energy groups which are treated as coarse-grained interactions are then listed in {\tt adress_cg_grp_names}.
 The most important element of this interpolation (see \eqnref{interpolation}) is the adaptive weighting function (for illustration see \figref{adress}):
 \begin{equation}
@@ -1697,19 +1780,19 @@ The TF acts on the coarse-grained site of the molecules and can be used to corre
 The thermodynamic force can be determined via an iterative procedure, which is described in detail in the \href{http://code.google.com/p/votca/downloads/list?&q=manual}{manual} of the \normindex{VOTCA package}~\cite{ruehle2009}. Setting the {\tt adress-interface-correction} to {\tt thermoforce} enables the TF correction and\newline{\tt adress-tf-grp-names} defines the energy groups to act on.
 
 \subsection{Example: Adaptive resolution simulation of water}\label{subsec:adressexample}
-In this section the set up of  an adaptive resolution simulation coupling atomistic SPC ~\cite{Berendsen81} water to its coarse-grained represenation will be explained (as used in \cite{Fritsch2012b}).
+In this section the set up of  an adaptive resolution simulation coupling atomistic SPC ~\cite{Berendsen81} water to its coarse-grained representation will be explained (as used in \cite{Fritsch2012b}).
 The following steps are required to setup the simulation:
 \begin{itemize}
 \item Perform a reference all-atom simulation
 \item Create a coarse-grained representation and save it as tabulated interaction function 
 \item Create a hybrid topology for the SPC water
-\item Modify the atomistic coordinate file to include the coarse grained represenation
+\item Modify the atomistic coordinate file to include the coarse grained representation
 \item Define the geometry of the adaptive simulation in the grompp input file
 \item Create an index file
 \end{itemize}
-The coarse-grained representation of the interaction is stored as tabulated interaction funtion see \ssecref{userpot}. The convention is to use the $C^{(12)}$  columns with the  $C^{(12)}$- coefficient set to 1. All other columns should be zero. The VOTCA manual has detailed instructions and a tutorial for spc water on how to coarse-grain the interaction using various techniques. 
-Here we named the coarse grained interaction CG, so the corresponding tabulated file is {\tt table_CG_CG.xvg}. To create the topology one can start from the atomistc topology file (e.g. share/gromacs/top/oplsaa.ff/spc.itp), we are assuming rigid water here. In the VOTCA tutorial the file is named {\tt hybrid_spc.itp}.
-The only difference to the atomistic toplogy is the addition of a coarse-grained virtual site:
+The coarse-grained representation of the interaction is stored as tabulated interaction function see \ssecref{userpot}. The convention is to use the $C^{(12)}$  columns with the  $C^{(12)}$- coefficient set to 1. All other columns should be zero. The VOTCA manual has detailed instructions and a tutorial for SPC water on how to coarse-grain the interaction using various techniques. 
+Here we named the coarse grained interaction CG, so the corresponding tabulated file is {\tt table_CG_CG.xvg}. To create the topology one can start from the atomistic topology file (e.g. share/gromacs/top/oplsaa.ff/spc.itp), we are assuming rigid water here. In the VOTCA tutorial the file is named {\tt hybrid_spc.itp}.
+The only difference to the atomistic topology is the addition of a coarse-grained virtual site:
 {\small
 \begin{verbatim}
 [ moleculetype ]
@@ -1754,8 +1837,8 @@ Adaptive water
 [ molecules ]
 SOL    8507
 \end{verbatim}}
-The $\sigma$ and $\epsilon$ values coorsepond to $C_6=1$ and $C_{12}=1$ and thus the table file should contain the coarse-grained interaction in either the $C_6$ or $C_{12}$ column. In the example the OPLS forcfield is used where $\sigma$ and $\epsilon$ are specified.
-Note that for forcefields which define atomtypes directly in terms of $C_6$ and $C_{12}$ ( like {\tt gmx.ff} ) one can simply set $C_6=0$ and $C_{12}=1$. See section \ssecref{userpot} for more details on tabulated interactions. Since now the water molecule has a virtual site the coordinate file also needs to include that.
+The $\sigma$ and $\epsilon$ values correspond to $C_6=1$ and $C_{12}=1$ and thus the table file should contain the coarse-grained interaction in either the $C_6$ or $C_{12}$ column. In the example the OPLS force field is used where $\sigma$ and $\epsilon$ are specified.
+Note that for force fields which define atomtypes directly in terms of $C_6$ and $C_{12}$ ( like {\tt gmx.ff} ) one can simply set $C_6=0$ and $C_{12}=1$. See section \ssecref{userpot} for more details on tabulated interactions. Since now the water molecule has a virtual site the coordinate file also needs to include that.
 {\small
 \begin{verbatim}
 adaptive water coordinates
@@ -1859,7 +1942,7 @@ are not supported, only {\tt tc-grps=System} will work.
 \item CMAP dihedrals in CHARMM are not supported, so use the {\tt -nocmap} option with {\tt pdb2gmx}.
 \end{itemize}
 \item \textbf{Implicit solvent:} Supported only with {\tt Reaction-Field} electrostatics.
-The only supported algorithm for GB is OBC, and the default {\gromacs} values for the scale fators
+The only supported algorithm for GB is OBC, and the default {\gromacs} values for the scale factors
 are hard coded in OpenMM, {\ie} {\tt obc_alpha=1}, {\tt obc_beta=0.8} and {\tt obc_gamma=4.85} and 
 therefore can not be changed.
 \item \textbf{Constraints:} Constraints in OpenMM are done by a combination of SHAKE,
@@ -1900,11 +1983,11 @@ graphics card is necessary. Molecular dynamics algorithms
 are very demanding and unlike in other application areas, 
 only high-end graphics cards are capable of providing performance comparable 
 to or higher then modern CPUs. For this reason, {\tt mdrun-gpu} is compatible with 
-only a subset of more performant CUDA-enabled GPUs (for detailed list see section 
+only a subset of more advanced CUDA-enabled GPUs (for detailed list see section
 \ref{subsec:compatibility}) and by default it does not run if it detects
 incompatible hardware. 
 
-For details about compatibility of NVIDIA drivers with harthe CUDA library and GPUs consult  
+For details about compatibility of NVIDIA drivers with harthe(???) CUDA library and GPUs consult
 the \href{http://developer.nvidia.com/object/gpucomputing.html}{NVIDIA developer page}.
 
 Summary of prerequisites: 
@@ -1928,7 +2011,7 @@ Summary of prerequisites:
     have a $\geq$v4.5 standard {\gromacs} installation along the GPU accelerated one.
 
     \item Add the {\tt openmm/lib} directory to your library path,  {\eg} in bash:\\
-    {\small{\tt export LD_LIBRARARY_PATH=path_to_gromacs/openmm/lib:\$LD_LIBRARY_PATH}}\\
+    {\small{\tt export LD_LIBRARY_PATH=path_to_gromacs/openmm/lib:\$LD_LIBRARY_PATH}}\\
     If there are other OpenMM versions installed, make sure that the supplied libraries have preference  
     when running {\tt mdrun-gpu}. Also, make sure that the CUDA libraries installed match the version 
     of CUDA that was used for compilation of {\gromacs}-GPU.
@@ -2100,4 +2183,16 @@ must match the architecture of the machine attempting to use them.
 % LocalWords:  OBC obc CCMA tol pbc xyz barostat pcoupl acc gpu PLUGIN Cmake GX
 % LocalWords:  MSVC gcc installpath cmake DGMX DCMAKE functionalities GPGPU GTS
 % LocalWords:  OpenCL DeviceID gromacs gpus html GeForce Quadro FX Plex CX GF
-% LocalWords:  VMD DCD
+% LocalWords:  VMD DCD GROningen MAchine BIOSON Groningen der Spoel Drunen Comp
+% LocalWords:  Phys Comm moltype intramol vdw Waals fep multivector pf
+% LocalWords:  pymbar dhdl xvg LINCS Entropic entropic solutes ref com iso pm
+% LocalWords:  rm prefactors equipotential potiso potisopf potpm trr
+% LocalWords:  potrm potrmpf midplanes midplane gaussians potflex vars massw av
+% LocalWords:  shure observables rccccccc vec eps dist min eqn transl nstsout
+% LocalWords:  nstrout rotangles rotslabs rottorque RMSD rmsdfit excl NH amine
+% LocalWords:  positionrestraint es SH phenylalanine solvated sh nanometer QM
+% LocalWords:  Lennard Buckingham UK Svensson ab vsitetop co UHF MP interatomic
+% LocalWords:  AdResS adress cg grp coords TF VOTCA thermoforce tf SPC userpot
+% LocalWords:  itp sitesn atomtypes ff csg ndx Tesla CHARMM AA
+% LocalWords:  CMAP nocmap fators Monte performant lib LD DIR
+% LocalWords:  CMake homepage DEV overclocking GT dlopen vmd VMDDIR
