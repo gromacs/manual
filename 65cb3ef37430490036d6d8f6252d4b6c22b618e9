@@ -1,0 +1,8 @@
+Change-Id: I233c27b605038480f5a75e6ea94de3a89c708973
+Code-Review+2: David van der Spoel <davidvanderspoel@gmail.com>
+Verified+1: Jenkins Buildbot
+Submitted-by: David van der Spoel <davidvanderspoel@gmail.com>
+Submitted-at: Wed, 20 Jun 2012 10:58:24 +0200
+Reviewed-on: https://gerrit.gromacs.org/918
+Project: manual
+Branch: refs/heads/release-4-5-patches
