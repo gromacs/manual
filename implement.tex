@@ -47,7 +47,7 @@ Here it is shown how it is possible to extract the virial calculation
 from the inner loop~\cite{Bekker93b}.
 
 \subsection{Virial}
-In a system with \swapindex{periodic}{boundary conditions}, the
+In a system with \index{periodic boundary conditions}, the
 periodicity must be taken into account for the virial:
 \beq
 \Xi~=~-\half~\sum_{i < j}^{N}~\rnij\otimes\Fvij
@@ -213,8 +213,8 @@ This may include common-sub-expression elimination, or moving
 code around. 
 
 \subsection{Fortran Code}
-Unfortunately, \normindex{Fortran} compilers are still better than
-C-compilers, for most machines anyway. For some machines ({\eg} SGI
+Unfortunately, on a few platforms \normindex{Fortran} compilers are
+still better than C-compilers. For some machines ({\eg} SGI
 Power Challenge) the difference may be up to a factor of 3, in the
 case of vector computers this may be even larger. Therefore, some of
 the routines that take up a lot of computer time have been translated
