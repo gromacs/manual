@@ -2146,10 +2146,7 @@ required, especially for any pressure simulations. Although it is, in
 principle, possible to parameterize a force field such that the pressure
 is close to the desired experimental value without correction, such a
 method makes the parameterization dependent on the cut-off and is therefore
-undesirable. {\bf Note} that it is not appropriate to use the long-range
-correction to the dispersion without using either a
-\normindex{reaction field} method or a proper long-range
-electrostatics method such as Ewald summation or PPPM.
+undesirable.
 
 \subsection{Energy}
 \label{sec:ecorr}
@@ -2370,76 +2367,35 @@ accurate it might even be possible to increase this spacing slightly.
 Pressure scaling works with PME, but be aware of the fact that
 anisotropic scaling can introduce artificial ordering in some systems.
 
-\subsection{\normindex{PPPM}}
+\subsection{\normindex{P3M-AD}}
 \label{sec:pppm}
-The \seeindex{Particle-Particle Particle-Mesh}{PPPM} methods of
+The \seeindex{Particle-Particle Particle-Mesh}{P3M} methods of
 Hockney \& Eastwood can also be applied in {\gromacs} for the
-treatment of long range electrostatic
-interactions~\cite{Hockney81,Darden93,Luty95a}.  With this algorithm
-the charges of all particles are spread over a grid of dimensions
-($n_x$,$n_y$,$n_z$) using a weighting function called the
-triangle-shaped charged distribution:
-\beq
-\begin{array}{lcl}
-W(\ve{r}) &=&   W(x)~W(y)~W(z)  \\[1ex]
-W(\xi)  &=& \left\{
-\begin{array}{ll}
-\frac{3}{4} - \left(\frac{\xi}{h}\right)^2 
-        & |\xi| \leq \frac{h}{2}                                \\[0.5ex]
-\frac{1}{2}\left(\frac{3}{2} - \frac{|\xi|}{h}\right)^2 
-        & \frac{h}{2} < |\xi| < \frac{3h}{2}                    \\[0.5ex]
-0       & \frac{3h}{2} \leq |\xi|                               \\[0.5ex]
-\end{array}
-\right.
-\end{array}
-\eeq
-where $\xi$ (x, y or z) is the distance to a grid point in the corresponding
-dimension. Only the 27 closest grid points need to be taken into account for each charge.
+treatment of long range electrostatic interactions~\cite{Hockney81}.
+Although the P3M method was the first efficient long-range electrostatics
+method for molecular simulation, the smooth PME (SPME) method has largely
+replaced P3M as the method of choice in atomistic simulations. One performance
+disadvantage of the original P3M method was that it required 3 3D-FFT
+back transforms to obtain the forces on the particles. But this is not
+required for P3M and the forces can be derived through analytical differentiation
+of the potential, as done in PME. The resulting method is termed P3M-AD.
+The only remaining difference between P3M-AD and PME is the optimization
+of the lattice Green influence function for error minimization that P3M uses.
+However, in 2012 it has been shown that the SPME influence function can be
+modified to obtain P3M~\cite{Ballenegger2012}.
+This means that the advantage of error minimization in P3M-AD can be used
+at the same computational cost and with the same code as PME,
+just by adding a few lines to modify the influence function.
+However, at optimal parameter setting the effect of error minimization
+in P3M-AD is less than 10\%. P3M-AD does show large accuracy gains with
+interlaced (also known as staggered) grids, but that is not supported
+in {\gromacs} (yet).
 
-Then, this charge distribution is Fourier transformed using a 3D inverse FFT 
-routine.
-In Fourier space, a convolution with function $\hat{G}$ is performed:
-\beq
-\hat{G}(k)      ~=~     \frac{\hat{g}(k)}{\epsilon_0 k^2}
-\eeq
-where $\hat{g}$ is the Fourier transform of the charge spread function
-g(r). This yields the long-range potential $\hat{\phi}(k)$ on the mesh, which
-can be transformed using a forward FFT routine into the real space potential.
-Finally, the potential and forces are retrieved using interpolation~\cite{Luty95a}.
-%
-% note - this accuracy is just a rough estimate...
-%
-It is not easy to calculate the full long-range virial tensor with
-PPPM, but it is possible to obtain the trace. This means that the sum
-of the pressure components is correct (and therefore the isotropic
-pressure) but not necessarily the individual pressure components!
-
-\subsubsection{Using PPPM}
-To use the PPPM algorithm in {\gromacs}, specify the
-following lines in your {\tt .mdp} file:
-
+P3M is used in {\gromacs} with exactly the same options as used with PME
+by selecting the electrostatics type:
 \begin{verbatim}
-coulombtype     = PPPM
-rlist           = 1.0
-rcoulomb        = 0.85
-rcoulomb_switch = 0.0
-rvdw            = 1.0
-fourierspacing  = 0.075
+coulombtype     = P3M-AD
 \end{verbatim}
-
-For details on the switch parameters, see the section on modified
-long-range interactions in this manual. When using PPPM we recommend
-to take at most 0.075 nm per grid point ({\eg} 20 grid points for 1.5
-nm).  PPPM does not provide the same accuracy as PME, but can be
-slightly faster in some cases. Due to the problem with the pressure
-tensor you shouldn't use it with pressure coupling.
-
-PPPM is currently disabled in GROMACS, but there are plans to
-re-introduce it.
-%We're somewhat ambivalent about PPPM, so if you use it please contact
-%us - otherwise it might be removed from future releases so we can concentrate
-%our efforts on PME.
-
 
 \subsection{Optimizing Fourier transforms}
 To get the best possible performance you should try to avoid large
