@@ -71,7 +71,8 @@ V_{LJ}(\rij) =  \frac{C_{ij}^{(12)}}{\rij^{12}} -
 See also \figref{lj}
 The parameters $C^{(12)}_{ij}$ and $C^{(6)}_{ij}$  depend on pairs of
 {\em atom types}; consequently they are taken from a matrix of
-LJ-parameters.
+LJ-parameters. In the Verlet cut-off scheme, the potential is shifted
+by a constant such that it is zero at the cut-off distance.
 
 \begin{figure}
 \centerline{\includegraphics[width=8cm]{plots/f-lj}}
@@ -2328,10 +2329,12 @@ less accurate reciprocal sum.
 \subsection{\normindex{PME}}
 \label{sec:pme}
 Particle-mesh Ewald is a method proposed by Tom
-Darden~\cite{Darden93,Essmann95} to improve the performance of the
+Darden~\cite{Darden93} to improve the performance of the
 reciprocal sum. Instead of directly summing wave vectors, the charges
-are assigned to a grid using cardinal B-spline interpolation. This
-grid is then Fourier transformed with a 3D FFT algorithm and the
+are assigned to a grid using interpolation. The implementation in
+{\gromacs} uses cardinal B-spline interpolation~\cite{Essmann95},
+which is refered to as smooth PME (SPME).
+The grid is then Fourier transformed with a 3D FFT algorithm and the
 reciprocal energy term obtained by a single sum over the grid in
 k-space.
 
@@ -2344,6 +2347,13 @@ than ordinary Ewald summation on medium to large systems. On very
 small systems it might still be better to use Ewald to avoid the
 overhead in setting up grids and transforms.
 For the parallelization of PME see the section on MPMD PME (\ssecref{mpmd_pme}).
+
+With the Verlet cut-off scheme, the PME direct space potential is
+shifted by a constant such that the potential is zero at the
+cut-off. This shift is small and since the net system charge is close
+to zero, the total shift is very small, unlike in the case of the
+Lennard-Jones potential where all shifts add up. We apply the shift
+anyhow, such that the potential is the exact integral of the force.
 
 \subsubsection{Using PME}
 To use Particle-mesh Ewald summation in {\gromacs}, specify the
