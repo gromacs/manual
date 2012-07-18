@@ -476,31 +476,285 @@ and  retained during \verb'nstlist' steps.
 
 To make the \normindex{neighbor list}, all particles that are close
 ({\ie} within the neighbor list cut-off) to a given particle must be found.
-This searching, usually called neighbor searching (NS),
+This searching, usually called neighbor search (NS) or pair search,
 involves periodic boundary conditions and determining the {\em image}
-(see \secref{pbc}). Without periodic boundary conditions a simple
-$O(N^2)$ algorithm must be used. With periodic boundary conditions
-a grid search can be used, which is $O(N)$.
+(see \secref{pbc}). The search algorithm is $O(N)$, although a simpler
+$O(N^2)$ algorithm is still available under some conditions.
+
+\subsubsection{\normindex{Cut-off schemes}: group versus Verlet}
+From version 4.6, {\gromacs} supports two different cut-off scheme
+setups: the original one based on atom groups and one using a Verlet
+buffer. There are some important differences that affect results,
+performance and feature support. The group scheme can be made to work
+(almost) like the Verlet scheme, but this will lead to a decrease in
+performance. The group scheme is especially fast for water molecules,
+which are abundant in many simulations.
+
+In the group scheme, a neighbor list is generated consisting of pairs
+of groups of at least one atom. These groups were originally
+\swapindex{charge}{group}s \ifthenelse{\equal{\gmxlite}{1}}{}{(see
+  \secref{chargegroup})}, but with a proper treatment of long-range
+electrostatics, performance is their only advantage. A pair of groups
+is put into the neighbor list when their center of geometry is within
+the cut-off distance. Interactions between all atom pairs (one from
+each charge group) are calculated for a certain number of MD steps,
+until the neighbor list is updated. This setup is efficient, as the
+neighbor search only checks distance between charge group pair, not
+atom pairs (saves a factor of $3 \times 3 = 9$ with a three-atom water
+model) and the non-bonded force kernels can be optimized for, say, a
+water molecule ``group''. Without explicit buffering, this setup leads
+to energy drift as some atom pairs which are within the cut-off don't
+interact and some outside the cut-off do interact. This can be caused
+by
+\begin{itemize}
+\item atoms moving across the cut-off between neighbor search steps, and/or
+\item for charge groups consisting of more than one atom, atom pairs
+  moving in/out of the cut-off when their charge group center of
+  geometry distance is outside/inside of the cut-off.
+\end{itemize}
+Explicitly adding a buffer to the neighbor list will remove such
+artifacts, but this comes at a high computational cost. How severe the
+artifacts are depends on the system, the properties in which you are
+interested, and the cut-off setup.
+
+The Verlet cut-off scheme uses a buffered pair list by default. It
+also uses clusters of atoms, but these are not static as in the group
+scheme. Rather, the clusters are defined spatially and consist of 4 or
+8 atoms, which is convenient for stream computing, using e.g. SSE, AVX
+or CUDA on GPUs. At neighbor search steps, an atom pair list (or
+cluster pair list, but that's an implementation detail) is created
+with a Verlet buffer. Thus the pair-list cut-off is larger than the
+interaction cut-off. In the non-bonded force kernels, forces are only
+added when an atom pair is within the cut-off distance at that
+particular time step. This ensures that as atoms move between pair
+search steps, forces between nearly all atoms within the cut-off
+distance are calculated. We say {\em nearly} all atoms, because
+{\gromacs} uses a fixed pair list update frequency for
+efficiency. There is a small chance that an atom pair distance is
+decreased to within the cut-off in this fixed number of steps. This
+small chance results in a small energy drift. When temperature
+coupling is used, the buffer size can be determined automatically,
+given a certain limit on the energy drift.
+
+The Verlet scheme specific settings in the {\tt mdp} file are:
+\begin{verbatim}
+cutoff-scheme        = Verlet
+verlet-buffer-drift  = 0.005
+\end{verbatim}
+The Verlet buffer size is determined from the latter option, which is
+by default set to 0.005 kJ/mol/ps energy drift per atom. Note that the
+total energy drift in the system is affected by many factors and it is
+usually much smaller than this default setting for the estimate. For
+constant energy (NVE) simulations, this drift should be set to -1 and
+a buffer has to be set manually by specifying {\tt rlist} $>$ {\tt
+  rcoulomb}. The simplest way to get a reasonable buffer size is to
+use an NVT {\tt mdp} file with the target temperature set to what you
+expect in your NVE simulation, and transfer the buffer size printed by
+{\tt grompp} to your NVE {\tt mdp} file.
+
+The Verlet cut-off scheme is implemented in a very efficient fashion
+based on clusters of particles. The simplest example is a cluster size
+of 4 particles. The pair list is then constructed based on cluster
+pairs. The cluster-pair search is much faster searching based on
+particle pairs, because $4 \times 4 = 16$ particle pairs are put in
+the list at once. The non-bonded force calculation kernel can then
+calculate all 16 particle-pair interactions at once, which maps nicely
+to SIMD units which can perform multiple floating operations at once
+(e.g. SSE, AVX, CUDA on GPUs, BlueGene FPUs). These non-bonded kernels
+are much faster than the kernels used in the group scheme for most
+types of systems, except for water molecules when not using a buffered
+pair list. This latter case is quite common for (bio-)molecular
+simulations, so for greatest speed, it is worth comparing the
+performance of both schemes.
+
+As the Verlet cut-off scheme was introduced in version 4.6, not
+all features of the group scheme are supported yet. The Verlet scheme
+supports a few new features which the group scheme does not support.
+A list of features not (fully) supported in both cut-off schemes is
+given in \tabref{cutoffschemesupport}.
+
+\begin{table}
+\centerline{
+\begin{tabular}{|l|c|c|}
+\dline
+Non-bonded interaction feature    & group & Verlet \\
+\dline
+unbuffered cut-off scheme         & $\surd$ & \\
+exact cut-off                     & shift/switch & $\surd$ \\
+shifted interactions              & force+energy & energy \\
+switched forces                   & $\surd$ & \\
+non-periodic systems              & $\surd$ & Z  + walls \\
+implicit solvent                  & $\surd$ & \\
+free energy perturbed non-bondeds & $\surd$ & \\
+group energy contributions        & $\surd$ & CPU (not on GPU) \\
+energy group exclusions           & $\surd$ & \\
+AdResS multi-scale                & $\surd$ & \\
+OpenMP multi-threading            & only PME & $\surd$ \\
+native GPU support                &         & $\surd$ \\
+\dline
+\end{tabular}
+}
+\caption{Differences (only) in the support of non-bonded features
+  between the group and Verlet cut-off schemes.}
+\label{tab:cutoffschemesupport}
+\end{table}
 
 \ifthenelse{\equal{\gmxlite}{1}}{}{
-To completely avoid cut-off artifacts, the non-bonded potentials
-can be switched exactly to zero at some distance smaller
-than the neighbor list cut-off (there are several ways to do this
-in {\gromacs}, see \secref{mod_nb_int}).
-One then has a buffer with the size equal to the neighbor list
-cut-off minus the longest interaction cut-off.
-In this case one can also choose to let {\tt mdrun} only update
-the neighbor list when required. That is when one or more particles
-have moved more than half the buffer size from the center of geometry
-of the \swapindex{charge}{group} they belong to (see \secref{chargegroup})
-as determined at the previous neighbor search.
-This option guarantees that there are no cut-off artifacts.
-{\bf Note} that for larger systems this comes at a high computational cost,
-since the neighbor list update frequency will be determined
-by just one or two particles moving slightly beyond the half buffer length
-(which not even necessarily implies that the neighbor list is invalid),
-while 99.99\% of the particles are fine.
-} % Brace matches ifthenelse test for gmxlite
+\subsubsection{Energy drift and pair-list buffering}
+For a canonical ensemble, the average energy drift caused by the
+finite Verlet buffer size can be determined from the atomic
+displacements and the shape of the potential at the cut-off.
+%Since we are interested in the small drift regime, we will assume
+%#that atoms will only move within the cut-off distance in the last step,
+%$n_\mathrm{ps}-1$, of the pair list update interval $n_\mathrm{ps}$.
+%Over this number of steps the displacment of an atom with mass $m$
+The displacement distribution along one dimension for a freely moving
+particle with mass $m$ over time $t$ at temperature $T$ is Gaussian
+with zero mean and variance $\sigma^2 = t\,k_B T/m$. For the distance
+between two atoms, the variance changes to $\sigma^2 = \sigma_{12}^2 =
+t\,k_B T(1/m_1+1/m_2)$.  Note that in practice particles usually
+interact with other particles over time $t$ and therefore the real
+displacement distribution is much narrower.  Given a non-bonded
+interaction cut-off distance of $r_c$ and a pair-list cut-off
+$r_\ell=r_c+r_b$, we can then write the average energy drift after
+time $t$ for pair interactions between one particle of type 1
+surrounded by particles of type 2 with number density $\rho_2$, when
+the inter particle distance changes from $r_0$ to $r_t$, as:
+
+\begin{eqnarray}
+\langle \Delta V \rangle \! &=&
+\int_{0}^{r_c} \int_{r_\ell}^\infty 4 \pi r_0^2 \rho_2 V(r_t) G\!\left(\frac{r_t-r_0}{\sigma}\right) d r_0\, d r_t \\
+&\approx&
+\int_{-\infty}^{r_c} \int_{r_\ell}^\infty 4 \pi r_0^2 \rho_2 \Big[ V'(r_c) (r_t - r_c) +
+\nonumber\\
+& &
+\phantom{\int_{-\infty}^{r_c} \int_{r_\ell}^\infty 4 \pi r_0^2 \rho_2 \Big[}
+ V''(r_c)\frac{1}{2}(r_t - r_c)^2 \Big] G\!\left(\frac{r_t-r_0}{\sigma}\right) d r_0 \, d r_t\\
+&\approx&
+4 \pi (r_\ell+\sigma)^2 \rho_2
+\int_{-\infty}^{r_c} \int_{r_\ell}^\infty \Big[ V'(r_c) (r_t - r_c) +
+\nonumber\\
+& &
+\phantom{4 \pi (r_\ell+\sigma)^2 \rho_2 \int_{-\infty}^{r_c} \int_{r_\ell}^\infty \Big[}
+V''(r_c)\frac{1}{2}(r_t - r_c)^2 \Big] G\!\left(\frac{r_t-r_0}{\sigma}\right) d r_0 \, d r_t\\
+&=&
+4 \pi (r_\ell+\sigma)^2 \rho_2 \bigg\{
+\frac{1}{2}V'(r_c)\left[r_b \sigma G\!\left(\frac{r_b}{\sigma}\right) - (r_b^2+\sigma^2)E\!\left(\frac{r_b}{\sigma}\right) \right] +
+\nonumber\\
+& &
+\phantom{4 \pi (r_\ell+\sigma)^2 \rho_2 \bigg\{ }
+\frac{1}{6}V''(r_c)\left[ \sigma(r_b^2+\sigma^2)G\!\left(\frac{r_b}{\sigma}\right) - r_b(r_b^2+3\sigma^2 ) E\!\left(\frac{r_b}{\sigma}\right) \right]
+\bigg\}
+\end{eqnarray}
+
+where $G$ is a Gaussian distribution with 0 mean and unit variance and
+$E(x)=\frac{1}{2}\mathrm{erfc}(x/\sqrt{2})$. We always want to achieve
+small energy drift, so $\sigma$ will be small compared to both $r_c$
+and $r_\ell$, thus the approximations in the equations above are good,
+since the Gaussian distribution decays rapidly. The energy drift needs
+to be averaged over all particle pair types and weighted with the
+particle counts. In {\gromacs} we don't allow cancellation of drift
+between pair types, so we average the absolute values. To obtain the
+average energy drift per unit time, it needs to be divided by the
+neighbor-list life time $t = ({\tt nstlist} - 1)\times{\tt dt}$. This
+function can not be inverted analytically, so we use bisection to
+obtain the buffer size $r_b$ for a target drift.  Again we note that
+in practice the drift we usually be much smaller than this estimate,
+as in the condensed phase particle displacements will be much smaller
+than for freely moving particles, which is the assumption used here.
+
+When (bond) constraints are present, some particles will have fewer
+degrees of freedom. This will reduce the energy drift. The
+displacement in an arbitrary direction of a particle with 2 degrees of
+freedom is not Gaussian, but rather follows the complementary error
+function: \beq
+\frac{\sqrt{\pi}}{2\sqrt{2}\sigma}\,\mathrm{erfc}\left(\frac{|r|}{\sqrt{2}\,\sigma}\right)
+\eeq where $\sigma^2$ is again $k_B T/m$.  This distribution can no
+longer be integrated analytically to obtain the energy drift. But we
+can generate a tight upper bound using a scaled and shifted Gaussian
+distribution (not shown). This Gaussian distribution can then be used
+to calculate the energy drift as described above. We consider
+particles constrained, i.e. having 2 degrees of freedom or fewer, when
+they are connected by constraints to particles with a total mass of at
+least 1.5 times the mass of the particles itself. For a particle with
+a single constraint this would give a total mass along the constraint
+direction of at least 2.5, which leads to a reduction in the variance
+of the displacement along that direction by at least a factor of 6.25.
+As the Gaussian distribution decays very rapidly, this effectively
+removes one degree of freedom from the displacement. Multiple
+constraints would reduce the displacement even more, but as this gets
+very complex, we consider those as particles with 2 degrees of
+freedom.
+
+There is one important implementation detail that reduces the energy
+drift caused by the finite Verlet buffer list size. The derivation
+above assumes a particle pair-list. However, the {\gromacs}
+implementation uses a cluster pair-list for efficiency. The pair list
+consists of pairs of clusters of 4 particles in most cases, also
+called a $4 \times 4$ list, but the list can also be $4 \times 8$ (GPU
+CUDA kernels and AVX 256-bit single precision kernels) or $4 \times 2$
+(SSE double-precision kernels). This means that the pair-list is
+effectively much larger than the corresponding $1 \times 1$ list. Thus
+slightly beyond the pair-list cut-off there will still be a large
+fraction of particle pairs present in the list. This fraction can be
+determined in a simulation and accurately estimated under some
+reasonable assumptions. The fraction decreases with increasing
+pair-list range, meaning that a smaller buffer can be used. For
+typical all-atom simulations with a cut-off of 0.9 nm this fraction is
+around 0.9, which gives a reduction in the energy drift of a factor of
+10. This reduction is taken into account during the automatic Verlet
+buffer calculation and results in a smaller buffer size.
+
+\begin{figure}
+\centerline{\includegraphics[width=9cm]{plots/verlet-drift}}
+\caption {Energy drift per atom for an SPC/E water system at 300K with
+  a time step of 2 fs and a pair-list update period of 10 steps
+  (pair-list life time: 18 fs). PME was used with {\tt ewald-rtol} set
+  to 10$^{-5}$; this parameter affects the shape of the potential at
+  the cut-off. Drift estimates due to finite Verlet buffer size are
+  shown for a $1 \times 1$ atom pair list and $4 \times 4$ atom pair
+  list without and with (dashed line) cancellation of positive and
+  negative drift. Real energy drift is shown for double- and
+  single-precision simulations. Single-precision rounding errors in
+  the SETTLE constraint algorithm cause the drift to become negative
+  at large buffer size. Note that at zero buffer size, the real drift
+  is small because the positive (H-H) and negative (O-H) drift
+  cancels.}
+\label{fig:verletdrift}
+\end{figure}
+
+In \figref{verletdrift} one can see that for water with a pair-list
+life time of 18 fs, the drift estimate is a factor of 6 higher than
+the real drift, or alternatively the buffer estimate is 0.024 nm too
+large.  This is because the protons don't move freely over 18 fs, but
+rather vibrate.
+%At a buffer size of zero there is cancellation of
+%drift due to repulsive (H-H) and attractive (O-H) interactions.
+
+\subsubsection{Cut-off artifacts and switched interactions}
+With the Verlet scheme, the pair potentials are shifted to be zero at
+the cut-off, such that the potential is the integral of the force.
+Note that in the group scheme this is not possible, because no exact
+cut-off distance is used. There can still be energy drift from
+non-zero forces at the cut-off. This effect is extremely small and
+often not noticeable, as other integration errors may dominate. To
+completely avoid cut-off artifacts, the non-bonded forces can be
+switched exactly to zero at some distance smaller than the neighbor
+list cut-off (there are several ways to do this in {\gromacs}, see
+\secref{mod_nb_int}). One then has a buffer with the size equal to the
+neighbor list cut-off less the longest interaction cut-off. With the
+group cut-off scheme, one can then also choose to let {\tt mdrun} only
+update the neighbor list when required. That is when one or more
+particles have moved more than half the buffer size from the center of
+geometry of the \swapindex{charge}{group} to which they belong (see
+\secref{chargegroup}), as determined at the previous neighbor search.
+This option guarantees that there are no cut-off artifacts.  {\bf
+  Note} that for larger systems this comes at a high computational
+cost, since the neighbor list update frequency will be determined by
+just one or two particles moving slightly beyond the half buffer
+length (which not even necessarily implies that the neighbor list is
+invalid), while 99.99\% of the particles are fine.  } % Brace matches
+ifthenelse test for gmxlite
 
 \subsubsection{Simple search\swapindexquiet{simple}{search}}
 Due to \eqnsref{box_rot}{simplerc}, the vector $\rvij$
@@ -566,7 +820,7 @@ and the interactions are calculated.
 
 But there is still an important reason for using ``charge groups'': efficiency.
 Where applicable, neighbor searching is carried out on the basis of
-charge groups are defined in the molecular topology.
+charge groups which are defined in the molecular topology.
 If the nearest image distance between the {\em
 geometrical centers} of the atoms of two charge groups is less than
 the cut-off radius, all atom pairs between the charge groups are
@@ -2923,14 +3177,22 @@ but differing slightly between the three Born radii models.
 % LocalWords:  zy zz se barostat compressibilities MTTK NPT Martyna al isobaric
 % LocalWords:  Tuckerman vir PV fkT iLt iL Liouville NHC Eq baro mu trj mol bc
 % LocalWords:  freezegroup Shannon's polarizability Overhauser barostats iLn KE
-% LocalWords:  negligibly thermostatted Tobias  rhombic maxwell et xtc TC
+% LocalWords:  negligibly thermostatted Tobias  rhombic maxwell et xtc TC rlist
 % LocalWords:  waals LINCS holonomic plincs lincs unc ang SA Langevin SD amu BD
 % LocalWords:  bfgs Broyden Goldfarb Shanno mkT kJ DFLEXIBLE Nocedal diag nmeig
 % LocalWords:  diagonalization anaeig nmens covanal ddg feia BT dp dq pV dV dA
 % LocalWords:  NpT eq stepsize REMD constrainted website Okabe MPI covar edi dd
 % LocalWords:  progman NMR ddcells innerloops ddtric tric dds rdd conf rcon est
 % LocalWords:  mb PP MPMD ddorder pp cartesian grompp npme parallelizable edr
-% LocalWords:  macromolecule nstlist vacuo parallelization dof indices MBAR
+% LocalWords:  macromolecule nstlist vacuo parallelization dof indices MBAR AVX
 % LocalWords:  TOL numerics parallelized eigenvectors dG parallelepipeds VdW np
-% LocalWords:  Coul multi solvation HCT OBC solv cav vdw Schaefer symplectic
-% LocalWords:  pymbar multinode subensemble Monte solute subst
+% LocalWords:  Coul multi solvation HCT OBC solv cav vdw Schaefer symplectic dt
+% LocalWords:  pymbar multinode subensemble Monte solute subst groupconcept GPU
+% LocalWords:  dodecahedron octahedron dodecahedra equilibration usinggroups nm
+% LocalWords:  topologies rlistlong CUDA GPUs rcoulomb SIMD BlueGene FPUs erfc
+% LocalWords:  cutoffschemesupport unbuffered bondeds AdResS OpenMP ewald rtol
+% LocalWords:  verletdrift peptide RMS rescaling ergodicity ergodic discretized
+% LocalWords:  isothermal compressibility isotropically anisotropic iteratively
+% LocalWords:  incompressible integrations translational biomolecules NMA PCA
+% LocalWords:  Bennett's equilibrated Hamiltonians covariance equilibrate
+% LocalWords:  inhomogeneous conformational
