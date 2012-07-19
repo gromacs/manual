@@ -2379,10 +2379,10 @@ disadvantage of the original P3M method was that it required 3 3D-FFT
 back transforms to obtain the forces on the particles. But this is not
 required for P3M and the forces can be derived through analytical differentiation
 of the potential, as done in PME. The resulting method is termed P3M-AD.
-This only remaining difference between P3M-AD and PME to the optimization
+The only remaining difference between P3M-AD and PME is the optimization
 of the lattice Green influence function for error minimization that P3M uses.
-But in 2012 it has been shown that the SPME influence function can be modified
-to obtain P3M~\cite{Ballenegger2012}.
+However, in 2012 it has been shown that the SPME influence function can be
+modified to obtain P3M~\cite{Ballenegger2012}.
 This means that the advantage of error minimization in P3M-AD can be used
 at the same computational cost and with the same code as PME,
 just by adding a few lines to modify the influence function.
