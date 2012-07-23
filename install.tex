@@ -180,22 +180,36 @@ file.
 \end{description}
 
 \section{Environment Variables}
-{\gromacs} programs may be influenced by the use of 
-\normindex{environment variables}. 
-First of all, the variables set in the {\tt \normindex{GMXRC}} file
-are essential for running and compiling {\gromacs}. Some other useful 
-environment variables are listed in the following sections.
+{\gromacs} programs may be influenced by the use of
+\normindex{environment variables}.  First of all, the variables set in
+the {\tt \normindex{GMXRC}} file are essential for running and
+compiling {\gromacs}. Some other useful environment variables are
+listed in the following sections. Most environment variables function
+by being set in your shell to any non-NULL value. Specific
+requirements are described below if other values need to be set. You
+should consult the documentation for your shell for instructions on
+how to set environment variables in the current shell, or in config
+files for future shells. Note that requirements for exporting
+environment variables to jobs run under batch control systems vary and
+you should consult your local documentation for details.
 
 {\bf Output Control}
 
 \begin{enumerate}
 
+\item   {\tt GMX_CONSTRAINTVIR}: print constraint virial and force virial energy terms.
+\item   {\tt GMX_MAXBACKUP}: {\gromacs} automatically backs up old
+        copies of files when trying to write a new file of the same
+        name, and this variable controls the maximum number of
+        backups that will be made, default 128.
 \item   {\tt GMX_NO_QUOTES}: if this is explicitly set, no cool quotes
         will be printed at the end of a program.
-\item   {\tt LOG_BUFS}: the size of the buffer for file I/O. When set
-        to 0, all file I/O will be unbuffered and therefore very slow.
-        This can be handy for debugging purposes, because it ensures
-        that all files are always totally up-to-date.
+\item   {\tt GMX_SUPPRESS_DUMP}: prevent dumping of step files during
+        (for example) blowing up during failure of constraint
+        algorithms.
+\item   {\tt GMX_TPI_DUMP}: dump all configurations to a {\tt .pdb}
+        file that have an interaction energy less than the value set
+        in this environment variable.
 \item   {\tt GMX_VIEW_XPM}: {\tt GMX_VIEW_XVG}, {\tt
         GMX_VIEW_EPS} and {\tt GMX_VIEW_PDB}, commands used to
         automatically view \@ {\tt .xvg}, {\tt .xpm}, {\tt .eps}
@@ -206,11 +220,14 @@ environment variables are listed in the following sections.
         as the {\gromacs} tool (which might not be what you want).
         Be careful not to use a command which blocks the terminal
         ({\eg} {\tt vi}), since multiple instances might be run.
-\item   {\tt GMX_MAXBACKUP}: max number of backups to be made, default
-        128.
-\item   {\tt GMX_SUPPRESS_DUMP}: prevent dumping of step files.
-\item   {\tt GMX_NOSEHOOVER_CHAINS}: enables printing of Nos{\'e}-Hoover chain data
-        to the {\tt .edr} file.
+\item   {\tt GMX_VIRIAL_TEMPERATURE}: print virial temperature energy term
+\item   {\tt LOG_BUFS}: the size of the buffer for file I/O. When set
+        to 0, all file I/O will be unbuffered and therefore very slow.
+        This can be handy for debugging purposes, because it ensures
+        that all files are always totally up-to-date.
+\item   {\tt LOGO}: set display color for logo in {\tt \normindex{ngmx}}.
+\item   {\tt LONGFORMAT}: use long float format when printing
+        decimal values.
 
 \end{enumerate}
 
@@ -225,25 +242,82 @@ environment variables are listed in the following sections.
         Mainly for debugging purposes, but may also be handy for
         porting to other platforms.
 \item   {\tt WHERE}: when set, print debugging info on line numbers.
-\item   There are a number of extra environment variables like these
-        that are used in debugging - check the code!
+
+% At this point, all environment variables should be described
+%\item   There are a number of extra environment variables like these
+%        that are used in debugging - check the code!
 
 \end{enumerate}
 
-{\bf Run control}
+{\bf Performance and Run Control}
 
 \begin{enumerate}
 
-\item   {\tt GMXNPRI}: for SGI systems only. When set, gives the
-        default non-degrading priority (npri) for {\tt
-        mdrun}, {\tt g_covar} and {\tt g_nmeig},
-        {\eg} setting {\tt setenv GMXNPRI 250} causes all
-        runs to be performed at near-lowest priority by default.
-\item   {\tt GMX_NOOPTIMIZEDKERNELS}: will prevent using assembly
-        kernels.
-\item   {\tt GMX_NO_SOLV_OPT}: turns off solvent optimizations.
+\item   {\tt DISTGCT}: couple distances between two atoms when doing general coupling
+        theory processes. The format is a string containing two integers, separated by a space.
+\item   {\tt GALACTIC_DYNAMICS}: planetary simulations are made possible (just for fun) by setting
+        this environment variable, which allows setting {\tt epsilon_r = -1} in the {\tt .mdp}
+        file. Normally, {\tt epsilon_r} must be greater than zero to prevent a fatal error.
+        See {\wwwpage} for example input files for a planetary simulation.
+\item   {\tt GMX_ALLOW_CPT_MISMATCH}: when set, runs will not exit if the
+        ensemble set in the {\tt .tpr} file does not match that of the
+        {\tt .cpt} file.
+\item   {\tt GMX_CAPACITY}: the maximum capacity of charge groups per
+        processor when using particle decomposition.
+\item   {\tt GMX_CYCLE_ALL}: times all code during runs.  Incompatible with threads.
+\item   {\tt GMX_CYCLE_BARRIER}: calls MPI_Barrier before each cycle start/stop call.
+\item   {\tt GMX_DD_ORDER_ZYX}: build domain decomposition cells in the order
+        (z, y, x) rather than the default (x, y, z).
+\item   {\tt GMX_DISABLE_ACCELERATION}: disables all architecture-specific (SSE2, SSE4, AVX, etc)
+        routines.
+\item   {\tt GMX_DISRE_ENSEMBLE_SIZE}: the number of systems for distance restraint ensemble
+        averaging. Takes an integer value.
+\item   {\tt GMX_ENX_NO_FATAL}: disable exiting upon encountering a corrupted frame in an {\tt .edr}
+        file, allowing the use of all frames up until the corruption.
+\item   {\tt GMX_FORCE_UPDATE}: update forces when invoking {\tt \normindex{mdrun} -rerun}.
+\item   {\tt GMX_IGNORE_FSYNC_FAILURE_ENV}: allow {\tt \normindex{mdrun}} to continue even if
+        a file is missing.
+\item   {\tt GMX_MAX_THREADS}: sets the maximum number of threads that {\tt \normindex{mdrun}}
+        can use.
+\item   {\tt GMX_MAXCONSTRWARN}: if set to -1, {\tt \normindex{mdrun}} will
+        not exit if it produces too many LINCS warnings.
 \item   {\tt GMX_NB_GENERIC}: use generic C kernels.  Should be set if using
-        {\tt GMX_NO_SOLV_OPT}.
+        group-based kernels and {\tt GMX_NO_SOLV_OPT}.
+\item   {\tt GMX_NBLISTCG}: use neighbor list and kernels based on charge groups.
+\item   {\tt GMX_NO_ALLVSALL}: disables optimized all-vs-all kernels.
+\item   {\tt GMX_NO_CART_REORDER}: used in initializing domain decomposition communicators. Node reordering
+        is default, but can be switched off with this environment variable.
+\item   {\tt GMX_NO_INT}, {\tt GMX_NO_TERM}, {\tt GMX_NO_USR1}: disable signal handlers for SIGINT,
+        SIGTERM, and SIGUSR1, respectively.
+\item   {\tt GMX_NOCHARGEGROUPS}: disables multi-atom charge groups, {\ie} each atom 
+        in all non-solvent molecules is assigned its own charge group.
+\item   {\tt GMX_NOPREDICT}: shell positions are not predicted.
+\item   {\tt GMX_NO_SOLV_OPT}: turns off solvent optimizations.
+\item   {\tt GMX_NSCELL_NCG}: the ideal number of charge groups per neighbor searching grid cell is hard-coded
+        to a value of 10. Setting this environment variable to any other integer value overrides this hard-coded
+        value.
+\item   {\tt GMX_PME_NTHREADS}: set the number of OpenMP or PME threads (overrides the number guessed by 
+        {\tt \normindex{mdrun}}.
+\item   {\tt GMX_PME_P3M}: use P3M-optimized influence function instead of smooth PME B-spline interpolation.
+\item   {\tt GMX_PME_THREAD_DIVISION}: PME thread division in the format "x y z" for all three dimensions. The
+        sum of the threads in each dimension must equal the total number of PME threads (set in 
+        {\tt GMX_PME_NTHREADS}).
+\item   {\tt GMX_PMEONEDD}: if the number of domain decomposition cells is set to 1 for both x and y, 
+        decompose PME in one dimension.
+\item   {\tt GMX_REQUIRE_INIT}: require that shell positions are initiated.
+\item   {\tt GMX_REQUIRE_TABLES}: require the use of tabulated Coulombic
+        and van der Waals interactions.
+\item   {\tt GMX_SCSIGMA_MIN}: the minimum value for soft-core $\sigma$. {\bf Note} that this value is set
+        using the {\tt sc-sigma} keyword in the {\tt .mdp} file, but this environment variable can be used
+        to reproduce pre-4.5 behavior with respect to this parameter.
+\item   {\tt GMX_TPIC_MASSES}: should contain multiple masses used for test particle insertion into a cavity.
+        The center of mass of the last atoms is used for insertion into the cavity.
+\item   {\tt GMXNPRI}: for SGI systems only. When set, gives the default non-degrading priority (npri) 
+        for {\tt \normindex{mdrun}}, {\tt \normindex{g_covar}} and {\tt \normindex{g_nmeig}},
+        {\eg} setting {\tt setenv GMXNPRI 250} causes all runs to be performed at near-lowest priority by default.
+\item   {\tt GMXNPRIALL}: same as {\tt GMXNPRI}, but for all processes.
+\item   {\tt MPIRUN}: the {\tt mpirun} command used by {\tt \normindex{g_tune_pme}}.
+\item   {\tt MDRUN}: the {\tt \normindex{mdrun}} command used by {\tt \normindex{g_tune_pme}}.
 
 \end{enumerate}
 
@@ -251,17 +325,46 @@ environment variables are listed in the following sections.
 
 \begin{enumerate}
 
+\item   {\tt ACC}: accuracy in Gaussian L510 (MC-SCF) component program.
+\item   {\tt BASENAME}: prefix of {\tt .tpr} files, used in Orca calculations
+        for input and output file names.
+\item   {\tt CPMCSCF}: when set to a nonzero value, Gaussian QM calculations will
+        iteratively solve the CP-MCSCF equations.
+\item   {\tt DEVEL_DIR}: location of modified links in Gaussian.
+\item   {\tt DSSP}: used by {\tt \normindex{do_dssp}} to point to the {\tt dssp}
+        executable (not just its path).
+\item   {\tt GAUSS_DIR}: directory where Gaussian is installed.
+\item   {\tt GAUSS_EXE}: name of the Gaussian executable.
+\item   {\tt GKRWIDTH}: spacing used by {\tt \normindex{g_dipoles}}.
+\item   {\tt GMX_MAXRESRENUM}: sets the maximum number of residues to be renumbered by
+        {\tt \normindex{grompp}}. A value of -1 indicates all residues should be renumbered.
+\item   {\tt GMX_FFRTP_TER_RENAME}: Some force fields (like AMBER) use specific names for N- and C-
+        terminal residues (NXXX and CXXX) as {\tt .rtp} entries that are normally renamed. Setting
+        this environment variable disables this renaming.
+\item   {\tt GMX_PATH_GZIP}: {\tt gunzip} executable, used by {\tt \normindex{g_wham}}.
+\item   {\tt GMXFONT}: name of X11 font used by {\tt \normindex{ngmx}}.
 \item   {\tt GMXTIMEUNIT}: the time unit used in output files, can be
         anything in fs, ps, ns, us, ms, s, m or h.
-\item   {\tt VMD_PLUGIN_PATH}: where to find VMD plug-ins. Needed to be
-        able to read VMD compatible files.
-\item   {\tt TOTAL}: sepcifically used by the {\tt \normindex{do_shift}} program.
-\item   {\tt DSSP}: used by {\tt \normindex{do_dssp}} to locate the {\tt dssp}
-        executable.
-\item   {\tt GMX_NOCHARGEGROUPS}: disables multi-atom charge groups, {\ie} each atom 
-        in all non-solvent molecules is assigned its own charge group.
+\item   {\tt MEM}: memory used for Gaussian QM calculation.
+\item   {\tt MULTIPROT}: name of the {\tt multiprot} executable, used by the
+        contributed program {\tt \normindex{do_multiprot}}.
+\item   {\tt NCPUS}: number of CPUs to be used for Gaussian QM calculation
 \item   {\tt OPENMM_PLUGIN_DIR}: the location of OpenMM plugins, needed for
         {\tt \normindex{mdrun-gpu}}.
+\item   {\tt ORCA_PATH}: directory where Orca is installed.
+\item   {\tt SASTEP}: simulated annealing step size for Gaussian QM calculation.
+\item   {\tt STATE}: defines state for Gaussian surface hopping calculation.
+\item   {\tt TESTMC}: perform 1000 random swaps in Monte Carlo clustering method
+        within {\tt \normindex{g_cluster}}.
+\item   {\tt TOTAL}: name of the {\tt total} executable used by the contributed
+        {\tt \normindex{do_shift}} program.
+\item   {\tt VERBOSE}: make {\tt \normindex{g_energy}} and {\tt \normindex{eneconv}}
+        loud and noisy.
+\item   {\tt VMD_PLUGIN_PATH}: where to find VMD plug-ins. Needed to be
+        able to read file formats recognized only by a VMD plug-in.
+\item   {\tt VMDDIR}: base path of VMD installation.
+\item   {\tt XMGR}: sets viewer to {\tt xmgr} (deprecated) instead of {\tt xmgrace}.
+
 \end{enumerate}
 
 \section{Running {\gromacs} in parallel}
