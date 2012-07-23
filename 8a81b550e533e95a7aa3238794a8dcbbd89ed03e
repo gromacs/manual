@@ -1,0 +1,9 @@
+Code-Review+2: Mark Abraham <mark.j.abraham@gmail.com>
+Code-Review+2: Christoph Junghans <junghans@votca.org>
+Code-Review+1: Justin Lemkul <jalemkul@vt.edu>
+Verified+1: Jenkins Buildbot
+Submitted-by: Christoph Junghans <junghans@votca.org>
+Submitted-at: Mon, 23 Jul 2012 18:18:29 +0200
+Reviewed-on: https://gerrit.gromacs.org/1212
+Project: manual
+Branch: refs/heads/release-4-6
