@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ $# != 1 ]]; then
+if [[ ! -d $1 ]]; then
   echo "Error: usage is 'mkman GMXBIN' where GMXBIN is the .../bin directory where GROMACS binaries are installed"
   exit
 fi
@@ -23,26 +23,21 @@ for PROG in $PROGRAMS; do
     # strip off .exe suffixes (good for Cygwin)
     program=${PROG%.exe}
 
-    if [ -x "${GMXBIN}/${PROG}" -a \
-	"$PROG" != "GMXRC" -a \
-        "$PROG" != "GMXRC.bash" -a \
-        "$PROG" != "GMXRC.csh" -a \
-        "$PROG" != "GMXRC.zsh" -a \
-        "$program" != "average" -a \
-        "$program" != "g_luck" -a \
-        "$program" != "${OPTIONS_PROGRAM_NAME}" -a \
-	"$program" != "my_dssp" -a \
-        "$PROG" != "completion.csh" -a \
-        "$PROG" != "completion.zsh" -a \
-        "$PROG" != "completion.bash" -a \
-        "$PROG" != "demux.pl" -a \
-        "$PROG" != "xplor2gmx.pl" ]; then
+    if [[ -x ${GMXBIN}/${PROG} && \
+	$PROG != "GMXRC"* && \
+        $program != "average" && \
+        $program != "g_luck" && \
+        $program != ${OPTIONS_PROGRAM_NAME}* && \
+	$program != "my_dssp" && \
+        $PROG != "completion."* && \
+        $PROG != "demux.pl" && \
+        $PROG != "xplor2gmx.pl" ]]; then
 	echo -n "$program "
 	${GMXBIN}/$PROG -quiet -man tex >& /dev/null
 	if [ -f ${program}.tex ]; then
 	    grep -v "Use dialog box GUI to edit command line options" ${program}.tex > mkman_temp.tex
 	    grep -v "non blocking priority" mkman_temp.tex > ${program}.tex
-	    \rm mkman_temp.tex
+	    rm mkman_temp.tex
 	    mv ${program}.tex ${MANDIR}/
 	    echo "\input{${MANDIR}/${program}}" >> $INDEX
 	else
@@ -59,6 +54,8 @@ if [[ ! ${INSTALLED_OPTIONS_PROGRAM_NAME} ]]; then
     exit 1
 else
     ${INSTALLED_OPTIONS_PROGRAM_NAME} -hidden -man tex 2> /dev/null
+    [[ ${INSTALLED_OPTIONS_PROGRAM_NAME}.tex = ${OPTIONS_PROGRAM_NAME}.tex ]] || \
+        mv ${INSTALLED_OPTIONS_PROGRAM_NAME}.tex ${OPTIONS_PROGRAM_NAME}.tex
 fi
 
 # The text emitted by the above -man tex line goes in the very first
