@@ -1,20 +1,20 @@
-#!/bin/csh -f
+#!/bin/bash
 
-if ( $#argv < 1 ) then
+if [[ ! -d $1 ]]; then
   echo "Error: provide the GROMACS html directory as first argument."
   exit
-endif
+fi
 
-set GMXHTMLDIR = $1
+GMXHTMLDIR=$1
 
-set 	dir = $cwd
+dir=${PWD}
 
-set TEXDIR	= .
-set MANDIR	= online
-set HTML	= $GMXHTMLDIR
-set HTMLOL	= $HTML/$MANDIR
-set HTMLMDPOPT	= $HTMLOL/mdp_opt.html
-set TEXMDPOPT	= $TEXDIR/mdp_opt.tex
+TEXDIR=.
+MANDIR=online
+HTML=$GMXHTMLDIR
+HTMLOL=$HTML/$MANDIR
+HTMLMDPOPT=$HTMLOL/mdp_opt.html
+TEXMDPOPT=$TEXDIR/mdp_opt.tex
 
 echo "Will convert $HTMLMDPOPT (html format)"
 echo "to $TEXMDPOPT (latex format)"
@@ -28,7 +28,7 @@ sed \
 -e 's/<\/[pP]>//g' \
 -e 's/&[nN][bB][sS][pP];/~/g' \
 -e 's/<[hH][rR]>//g' \
-$HTMLMDPOPT >! temp1
+$HTMLMDPOPT > temp1
 
 echo -n "."
 awk '{\
@@ -38,7 +38,7 @@ awk '{\
     else\
       print $0\
     }\
-  }' temp1 >! temp2
+  }' temp1 > temp2
   
 echo -n "."
 sed \
@@ -61,7 +61,7 @@ sed \
 #-e 's/<[hH]4>\([^<]*\)<\/[bB]>/\1/g' \
 #-e 's/<[bB]>//g' \
 #-e 's/<\/[bB]>//g' \
-temp2 >! temp3
+temp2 > temp3
 
 echo -n "."
 sed \
@@ -83,7 +83,7 @@ sed \
 -e 's/\$gt\$/$>$/g' \
 -e 's/e\.g\./{\\eg}/g' \
 -e 's/i\.e\./{\\ie}/g' \
-temp3 >! temp4
+temp3 > temp4
 
 echo -n "."
 awk 'BEGIN { printf("\\label{sec:mdpopt}\n"); }\
@@ -95,11 +95,11 @@ awk 'BEGIN { printf("\\label{sec:mdpopt}\n"); }\
       output=0;\
   }\
   if (output) print;\
-}' temp4 >! $TEXMDPOPT
+}' temp4 > $TEXMDPOPT
 
 echo "."
 
-\rm temp1 temp2 temp3 temp4
+rm temp1 temp2 temp3 temp4
 
 #last line
 exit
