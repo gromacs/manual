@@ -264,49 +264,45 @@ you should consult your local documentation for details.
         {\tt .cpt} file.
 \item   {\tt GMX_CAPACITY}: the maximum capacity of charge groups per
         processor when using particle decomposition.
-% TODO document this
-\item   {\tt GMX_CUDA_NB_DEFAULT}: mutually exclusive of {\tt GMX_CUDA_NB_LEGACY}.
-% END TODO
-\item   {\tt GMX_CUDA_NB_EWALD_TWINCUT}: force the use of twin-range cutoff scheme even if {\tt rvdw} =
-        {\tt rcoulomb} initially. Used only for benchmarking.
-% TODO document this
-\item   {\tt GMX_CUDA_NB_LEGACY}: mutually exclusive of {\tt GMX_CUDA_NB_DEFAULT}.
-% END TODO
-\item   {\tt GMX_CUDA_STREAMSYNC}: force the use of cudaStreamSynchronized on ECC-enabled GPUs, which leads
-        to performance loss due to a known CUDA driver bug. Cannot be set simultaneously with
-        {\tt GMX_NO_CUDA_STREAMSYNC}.
+\item   {\tt GMX_CUDA_NB_DEFAULT}: Force the use of the default CUDA non-bonded kernels instead of
+        the legacy ones; mutually exclusive of {\tt GMX_CUDA_NB_LEGACY}.
+\item   {\tt GMX_CUDA_NB_EWALD_TWINCUT}: force the use of twin-range cutoff kernel even if {\tt rvdw} =
+        {\tt rcoulomb} after PP-PME load balancing. The switch to twin-range kernels is automated,
+        so this variable should be used only for benchmarking.
+\item   {\tt GMX_CUDA_NB_LEGACY}: Force the use of the legacy CUDA non-bonded kernels, which are
+        the default when using the CUDA toolkit versions 3.2 or 4.0 on Fermi NVIDIA GPUs (compute capability 2.x);
+        mutually exclusive of {\tt GMX_CUDA_NB_DEFAULT}.
+\item   {\tt GMX_CUDA_STREAMSYNC}: force the use of cudaStreamSynchronize on ECC-enabled GPUs, which leads
+        to performance loss due to a known CUDA driver bug present in API v5.0 NVIDIA drivers (pre-30x.xx).
+        Cannot be set simultaneously with {\tt GMX_NO_CUDA_STREAMSYNC}.
 \item   {\tt GMX_CYCLE_ALL}: times all code during runs.  Incompatible with threads.
 \item   {\tt GMX_CYCLE_BARRIER}: calls MPI_Barrier before each cycle start/stop call.
 \item   {\tt GMX_DD_ORDER_ZYX}: build domain decomposition cells in the order
         (z, y, x) rather than the default (x, y, z).
 \item   {\tt GMX_DETAILED_PERF_STATS}: when set, print slightly more detailed performance information
-        to the {\tt .log} file.
-\item   {\tt GMX_DISABLE_CPU_ACCELERATION}: disables all architecture-specific (SSE2, SSE4, AVX, etc.)
-        routines.
-% TODO document this
-\item   {\tt GMX_DISABLE_CUDA_TIMING}:
-% END TODO
+        to the {\tt .log} file. The resulting output is the way performance summary is reported in versions
+        4.5.x and thus may be useful for anyone using scripts to parse {\tt .log} files or standard output.
+\item   {\tt GMX_DISABLE_CPU_ACCELERATION}: disables CPU architecture-specific SIMD-optimized (SSE2, SSE4, AVX, etc.)
+        non-bonded kernels thus forcing the use of plain C kernels.
+\item   {\tt GMX_DISABLE_CUDA_TIMING}: timing of asynchronously executed GPU operations can have a
+        non-negligible overhead with short step times. Disabling timing can improve performance in these cases.
 \item   {\tt GMX_DISABLE_GPU_DETECTION}: when set, disables GPU detection even if {\tt \normindex{mdrun}} was compiled
         with GPU support.
 \item   {\tt GMX_DISABLE_PINHT}: disable pinning of consecutive threads to physical cores when using
-        Intel hyperthreading.
+        Intel hyperthreading. Controlled with {\tt \normindex{mdrun} -nopinht} and thus this environment
+        variable will likely be removed.
 \item   {\tt GMX_DISRE_ENSEMBLE_SIZE}: the number of systems for distance restraint ensemble
         averaging. Takes an integer value.
-\item   {\tt GMX_EMULATE_GPU}: run GPU emulation on CPU hardware to get a performance estimate.  
-        Automatically triggered if nonbonded calculations are turned off using {\tt GMX_NO_NONBONDED}.
+\item   {\tt GMX_EMULATE_GPU}: emulate GPU runs by using algorithmically equivalent CPU reference code instead of
+        GPU-accelerated functions. As the CPU code is slow, it is intended to be used only for debugging purposes.
+        The behavior is automatically triggered if non-bonded calculations are turned off using {\tt GMX_NO_NONBONDED}
+        case in which the non-bonded calculations will not be called, but the CPU-GPU transfer will also be skipped.
 \item   {\tt GMX_ENX_NO_FATAL}: disable exiting upon encountering a corrupted frame in an {\tt .edr}
         file, allowing the use of all frames up until the corruption.
 \item   {\tt GMX_FORCE_UPDATE}: update forces when invoking {\tt \normindex{mdrun} -rerun}.
-% TODO document these
-\item   {\tt GMX_GPU_ALWAYS_ENER}:
-\item   {\tt GMX_GPU_ALWAYS_PRUNE}:
-% END TODO 
 \item   {\tt GMX_GPU_ID}: set in the same way as the {\tt \normindex{mdrun}} option {\tt -gpu_id}, {\tt GMX_GPU_ID}
-        allows the user to specify different GPU id's, which can be useful for selecting different
-        cards on nodes in a cluster.  Cannot be used in conjunction with {\tt -gpu_id}.
-% TODO document this one
-\item   {\tt GMX_GPU_NEVER_ENER}:
-% END TODO
+        allows the user to specify different GPU id-s, which can be useful for selecting different
+        devices on different compute nodes in a cluster.  Cannot be used in conjunction with {\tt -gpu_id}.
 \item   {\tt GMX_IGNORE_FSYNC_FAILURE_ENV}: allow {\tt \normindex{mdrun}} to continue even if
         a file is missing.
 \item   {\tt GMX_LJCOMB_TOL}: when set to a floating-point value, overrides the default tolerance of
@@ -318,26 +314,33 @@ you should consult your local documentation for details.
 \item   {\tt GMX_NB_GENERIC}: use the generic C kernel.  Should be set if using
         the group-based cutoff scheme and also sets {\tt GMX_NO_SOLV_OPT} to be true,
         thus disabling solvent optimizations as well.
-% TODO - this one could be better
-\item   {\tt GMX_NB_MIN_CI}: neighbor list balancing parameter, used when running on GPU.  Must be set to
-        a positive integer.
-% END TODO
+\item   {\tt GMX_NB_MIN_CI}: neighbor list balancing parameter used when running on GPU. Sets the
+        target minimum number pair-lists in order to improve multi-processor load-balance for better
+        performance with small simulation systems. Must be set to a positive integer, the default value
+        is optimized for NVIDIA Fermi and Kepler GPUs, therefore changing it is not necessary for
+        normal usage, but it can be useful on future architectures.
 \item   {\tt GMX_NBLISTCG}: use neighbor list and kernels based on charge groups.
 \item   {\tt GMX_NBNXN_CYCLE}: when set, print detailed neighbor search cycle counting.
-% TODO document these
-\item   {\tt GMX_NBNXN_EWALD_ANALYTICAL}:
-\item   {\tt GMX_NBNXN_EWALD_TABLE}:
-\item   {\tt GMX_NBNXN_SIMD_2XNN}:
-\item   {\tt GMX_NBNXN_SIMD_4XN}:
-% END TODO
+\item   {\tt GMX_NBNXN_EWALD_ANALYTICAL}: force the use of analytical Ewald non-bonded kernels,
+        mutually exclusive of {\tt GMX_NBNXN_EWALD_TABLE}.
+\item   {\tt GMX_NBNXN_EWALD_TABLE}: force the use of tabulated Ewald non-bonded kernels,
+        mutually exclusive of {\tt GMX_NBNXN_EWALD_ANALYTICAL}.
+\item   {\tt GMX_NBNXN_SIMD_2XNN}: force the use of 2x(N+N) SIMD CPU non-bonded kernels,
+        mutually exclusive of {\tt GMX_NBNXN_SIMD_4XN}.
+\item   {\tt GMX_NBNXN_SIMD_4XN}: force the use of 4xN SIMD CPU non-bonded kernels,
+        mutually exclusive of {\tt GMX_NBNXN_SIMD_2XNN}.
 \item   {\tt GMX_NO_ALLVSALL}: disables optimized all-vs-all kernels.
 \item   {\tt GMX_NO_CART_REORDER}: used in initializing domain decomposition communicators. Node reordering
         is default, but can be switched off with this environment variable.
-\item   {\tt GMX_NO_CUDA_STREAMSYNC}: the opposite of {\tt GMX_CUDA_STREAMSYNC}. Disables cudaStreamSynchronize
-        to improve performance.
+\item   {\tt GMX_NO_CUDA_STREAMSYNC}: the opposite of {\tt GMX_CUDA_STREAMSYNC}. Disables the use of the
+        standard cudaStreamSynchronize-based GPU waiting to improve performance when using CUDA driver API
+        ealier than v5.0 with ECC-enabled GPUs.
 \item   {\tt GMX_NO_INT}, {\tt GMX_NO_TERM}, {\tt GMX_NO_USR1}: disable signal handlers for SIGINT,
         SIGTERM, and SIGUSR1, respectively.
 \item   {\tt GMX_NO_NODECOMM}: do not use separate inter- and intra-node communicators.
+\item   {\tt GMX_NO_NONBONDED}: skip non-bonded calculations; can be used to estimate the possible
+        performance gain from adding a GPU accelerator to the current hardware setup -- assuming that this is
+        fast enough to complete the non-bonded calculations while the CPU does bonded force and PME computation.
 \item   {\tt GMX_NO_PULLVIR}: when set, do not add virial contribution to COM pull forces.
 \item   {\tt GMX_NOCHARGEGROUPS}: disables multi-atom charge groups, {\ie} each atom 
         in all non-solvent molecules is assigned its own charge group.
@@ -367,20 +370,16 @@ you should consult your local documentation for details.
 \item   {\tt GMX_VERLET_BUFFER_RES}: resolution of buffer size in Verlet cutoff scheme.  The default value is
         0.001, but can be overridden with this environment variable.
 \item   {\tt GMX_VERLET_SCHEME}: convert from group-based to Verlet cutoff scheme, even if the {\tt cutoff_scheme} is
-        not set to use Verlet in the {\tt .mdp} file.
+        not set to use Verlet in the {\tt .mdp} file. It is unnecessary since the {\tt -testverlet} option of
+        {\tt \normindex{mdrun}} has the same functionality, but it is maintained for backwards compatibility.
 \item   {\tt GMXNPRI}: for SGI systems only. When set, gives the default non-degrading priority (npri) 
         for {\tt \normindex{mdrun}}, {\tt \normindex{g_covar}} and {\tt \normindex{g_nmeig}},
         {\eg} setting {\tt setenv GMXNPRI 250} causes all runs to be performed at near-lowest priority by default.
 \item   {\tt GMXNPRIALL}: same as {\tt GMXNPRI}, but for all processes.
-\item   {\tt GOMP_CPU_AFFINITY}: used to set GNU OpenMP thread affinity, which can conflict with internal thread
-        affinity and lead to performance loss.  Also honored by Intel OpenMP implementation.
-\item   {\tt KMP_AFFINITY}: same as {\tt GOMP_CPU_AFFINITY}, but specific to Intel.
 \item   {\tt MPIRUN}: the {\tt mpirun} command used by {\tt \normindex{g_tune_pme}}.
 \item   {\tt MDRUN}: the {\tt \normindex{mdrun}} command used by {\tt \normindex{g_tune_pme}}.
-\item   {\tt NSTLIST_ENVVAR}: sets the default value for {\tt nstlist}, preventing it from being tuned during
+\item   {\tt GMX_NSTLIST}: sets the default value for {\tt nstlist}, preventing it from being tuned during
         {\tt \normindex{mdrun}} startup when using the Verlet cutoff scheme.
-\item   {\tt OMP_NUM_THREADS}: the number of OpenMP threads per process, if different from the maximum
-        number of threads available.
 
 \end{enumerate}
 
