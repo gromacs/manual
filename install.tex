@@ -267,7 +267,7 @@ you should consult your local documentation for details.
 % TODO document this
 \item   {\tt GMX_CUDA_NB_DEFAULT}: mutually exclusive of {\tt GMX_CUDA_NB_LEGACY}.
 % END TODO
-\item   {\tt GMX_CUDA_NB_EWALD_TWINCUT}: force the use of twin-range cutoff scheme even if {\tt rvdw} =
+\item   {\tt GMX_CUDA_NB_EWALD_TWINCUT}: force the use of twin-range cutoff kernel even if {\tt rvdw} =
         {\tt rcoulomb} initially. Used only for benchmarking.
 % TODO document this
 \item   {\tt GMX_CUDA_NB_LEGACY}: mutually exclusive of {\tt GMX_CUDA_NB_DEFAULT}.
@@ -280,7 +280,8 @@ you should consult your local documentation for details.
 \item   {\tt GMX_DD_ORDER_ZYX}: build domain decomposition cells in the order
         (z, y, x) rather than the default (x, y, z).
 \item   {\tt GMX_DETAILED_PERF_STATS}: when set, print slightly more detailed performance information
-        to the {\tt .log} file.
+        to the {\tt .log} file. The resulting output is the way statistics are reported in versions 
+        4.5.x and thus may be useful for anyone using scripts to parse {\tt .log} files.
 \item   {\tt GMX_DISABLE_CPU_ACCELERATION}: disables all architecture-specific (SSE2, SSE4, AVX, etc.)
         routines.
 % TODO document this
@@ -289,7 +290,8 @@ you should consult your local documentation for details.
 \item   {\tt GMX_DISABLE_GPU_DETECTION}: when set, disables GPU detection even if {\tt \normindex{mdrun}} was compiled
         with GPU support.
 \item   {\tt GMX_DISABLE_PINHT}: disable pinning of consecutive threads to physical cores when using
-        Intel hyperthreading.
+        Intel hyperthreading. Controlled with {\tt \normindex{mdrun} -nopinht} and thus this environment
+        variable will likely be removed.
 \item   {\tt GMX_DISRE_ENSEMBLE_SIZE}: the number of systems for distance restraint ensemble
         averaging. Takes an integer value.
 \item   {\tt GMX_EMULATE_GPU}: run GPU emulation on CPU hardware to get a performance estimate.  
@@ -320,7 +322,7 @@ you should consult your local documentation for details.
         thus disabling solvent optimizations as well.
 % TODO - this one could be better
 \item   {\tt GMX_NB_MIN_CI}: neighbor list balancing parameter, used when running on GPU.  Must be set to
-        a positive integer.
+        a positive integer. Not necessary for normal usage.
 % END TODO
 \item   {\tt GMX_NBLISTCG}: use neighbor list and kernels based on charge groups.
 \item   {\tt GMX_NBNXN_CYCLE}: when set, print detailed neighbor search cycle counting.
@@ -367,20 +369,16 @@ you should consult your local documentation for details.
 \item   {\tt GMX_VERLET_BUFFER_RES}: resolution of buffer size in Verlet cutoff scheme.  The default value is
         0.001, but can be overridden with this environment variable.
 \item   {\tt GMX_VERLET_SCHEME}: convert from group-based to Verlet cutoff scheme, even if the {\tt cutoff_scheme} is
-        not set to use Verlet in the {\tt .mdp} file.
+        not set to use Verlet in the {\tt .mdp} file. It is unnecessary since the {\tt -testverlet} option of
+        {\tt \normindex{mdrun}} has the same functionality, but it is maintained for backwards compatibility.
 \item   {\tt GMXNPRI}: for SGI systems only. When set, gives the default non-degrading priority (npri) 
         for {\tt \normindex{mdrun}}, {\tt \normindex{g_covar}} and {\tt \normindex{g_nmeig}},
         {\eg} setting {\tt setenv GMXNPRI 250} causes all runs to be performed at near-lowest priority by default.
 \item   {\tt GMXNPRIALL}: same as {\tt GMXNPRI}, but for all processes.
-\item   {\tt GOMP_CPU_AFFINITY}: used to set GNU OpenMP thread affinity, which can conflict with internal thread
-        affinity and lead to performance loss.  Also honored by Intel OpenMP implementation.
-\item   {\tt KMP_AFFINITY}: same as {\tt GOMP_CPU_AFFINITY}, but specific to Intel.
 \item   {\tt MPIRUN}: the {\tt mpirun} command used by {\tt \normindex{g_tune_pme}}.
 \item   {\tt MDRUN}: the {\tt \normindex{mdrun}} command used by {\tt \normindex{g_tune_pme}}.
 \item   {\tt NSTLIST_ENVVAR}: sets the default value for {\tt nstlist}, preventing it from being tuned during
         {\tt \normindex{mdrun}} startup when using the Verlet cutoff scheme.
-\item   {\tt OMP_NUM_THREADS}: the number of OpenMP threads per process, if different from the maximum
-        number of threads available.
 
 \end{enumerate}
 
