@@ -372,15 +372,10 @@ you should consult your local documentation for details.
         for {\tt \normindex{mdrun}}, {\tt \normindex{g_covar}} and {\tt \normindex{g_nmeig}},
         {\eg} setting {\tt setenv GMXNPRI 250} causes all runs to be performed at near-lowest priority by default.
 \item   {\tt GMXNPRIALL}: same as {\tt GMXNPRI}, but for all processes.
-\item   {\tt GOMP_CPU_AFFINITY}: used to set GNU OpenMP thread affinity, which can conflict with internal thread
-        affinity and lead to performance loss.  Also honored by Intel OpenMP implementation.
-\item   {\tt KMP_AFFINITY}: same as {\tt GOMP_CPU_AFFINITY}, but specific to Intel.
 \item   {\tt MPIRUN}: the {\tt mpirun} command used by {\tt \normindex{g_tune_pme}}.
 \item   {\tt MDRUN}: the {\tt \normindex{mdrun}} command used by {\tt \normindex{g_tune_pme}}.
 \item   {\tt NSTLIST_ENVVAR}: sets the default value for {\tt nstlist}, preventing it from being tuned during
         {\tt \normindex{mdrun}} startup when using the Verlet cutoff scheme.
-\item   {\tt OMP_NUM_THREADS}: the number of OpenMP threads per process, if different from the maximum
-        number of threads available.
 
 \end{enumerate}
 
