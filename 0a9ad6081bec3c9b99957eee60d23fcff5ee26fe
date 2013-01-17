@@ -1,0 +1,9 @@
+Code-Review+1: Roland Schulz <roland@rschulz.eu>
+Code-Review+2: Christoph Junghans <junghans@votca.org>
+Code-Review+1: Erik Lindahl <erik@kth.se>
+Verified+1: Jenkins Buildbot
+Submitted-by: Christoph Junghans <junghans@votca.org>
+Submitted-at: Fri, 18 Jan 2013 00:09:40 +0100
+Reviewed-on: https://gerrit.gromacs.org/2081
+Project: manual
+Branch: refs/heads/release-4-6
