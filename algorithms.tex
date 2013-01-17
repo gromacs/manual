@@ -2240,20 +2240,20 @@ and a noise term to Newton's equations of motion, as
 \beq
 \label{SDeq}
 m_i {\de^2 \ve{r}_i \over \de t^2} =
-- m_i \xi_i {\de \ve{r}_i \over \de t} + \ve{F}_i(\ve{r}) + \vrond_i,
+- m_i \gamma_i {\de \ve{r}_i \over \de t} + \ve{F}_i(\ve{r}) + \vrond_i,
 \eeq 
-where $\xi_i$ is the friction constant $[1/\mbox{ps}]$ and
+where $\gamma_i$ is the friction constant $[1/\mbox{ps}]$ and
 $\vrond_i\!\!(t)$  is a noise process with 
 $\langle \rond_i\!\!(t) \rond_j\!\!(t+s) \rangle = 
-    2 m_i \xi_i k_B T \delta(s) \delta_{ij}$.
-When $1/\xi_i$ is large compared to the time scales present in the system,
+    2 m_i \gamma_i k_B T \delta(s) \delta_{ij}$.
+When $1/\gamma_i$ is large compared to the time scales present in the system,
 one could see stochastic dynamics as molecular dynamics with stochastic
 temperature-coupling. The advantage compared to MD with Berendsen
 temperature-coupling is that in case of SD the generated ensemble is known.
 For simulating a system in vacuum there is the additional advantage that there is no
 accumulation of errors for the overall translational and rotational
 degrees of freedom.
-When $1/\xi_i$ is small compared to the time scales present in the system,
+When $1/\gamma_i$ is small compared to the time scales present in the system,
 the dynamics will be completely different from MD, but the sampling is
 still correct.
 
@@ -2262,13 +2262,19 @@ a simple and efficient one
 and a more complex leap-frog algorithm~\cite{Gunsteren88}.
 The accuracy of both integrators is equivalent to the normal MD leap-frog and
 velocity-Verlet integrator, except with constraints where the simple
-SD integrator is significantly less accurate. The simple integrator is:
+SD integrator is significantly less accurate. There is a proper way
+of applying constraints with the simple integrator, but that requires
+a second constraining step~\cite{Goga2012}, which diminishes the gain.
+The simple integrator is:
 \bea
 \label{eqn:sd_int1}
-\ve{v}(t+\hDt)  &~=~&   \alpha \ve{v}(t-\hDt) + \frac{1 - \alpha}{m \xi}\ve{F}(t) + \sqrt{\frac{k_B T}{m}(1 - \alpha^2)} \ve{\zeta} \\
-\ve{r}(t+\Dt)   &~=~&   \ve{r}(t)+\Dt\ve{v}(t+\hDt) \\
-\alpha &~=~& \left(1 - \frac{xi}{m} \Dt \right)
+\ve{v}(t+\hDt)  &~=~&   \alpha \, \ve{v}(t-\hDt) + \frac{1 - \alpha}{m \gamma}\ve{F}(t) + \sqrt{\frac{k_B T}{m}(1 - \alpha^2)} \, \ruis_i \\
+\ve{r}(t+\Dt)   &~=~&   \ve{r}(t)+\Dt \, \ve{v}(t+\hDt) \\
+\alpha &~=~& \left(1 - \frac{\gamma \Dt}{m} \right)
 \eea
+where $\ruis_i$ is Gaussian distributed noise with $\mu = 0$, $\sigma = 1$.
+With constraints you should only consider using the simple integrator when $\gamma \Dt/m \ll 0.01$.
+
 In the complex algorithm four Gaussian random numbers are required
 per integration step per degree of freedom, and with constraints the
 coordinates need to be constrained twice per integration step.
@@ -2276,11 +2282,11 @@ Depending on the computational cost of the force calculation,
 this can take a significant part of the simulation time.
 Exact continuation of a stochastic dynamics simulation is not possible,
 because the state of the random number generator is not stored.
-When using SD as a thermostat, an appropriate value for $\xi$ is 0.5 ps$^{-1}$,
+When using SD as a thermostat, an appropriate value for $\gamma$ is 0.5 ps$^{-1}$,
 since this results in a friction that is lower than the internal friction
 of water, while it is high enough to remove excess heat
 (unless plain cut-off or reaction-field electrostatics is used).
-With this value of $\xi$ the efficient algorithm will usually be accurate
+With this value of $\gamma$ the efficient algorithm will usually be accurate
 enough.
 
 \section{Brownian Dynamics\swapindexquiet{Brownian}{dynamics}}
@@ -2305,8 +2311,8 @@ In {\gromacs} the equations are integrated with a simple, explicit scheme
 \eeq
 where $\ruis_i$ is Gaussian distributed noise with $\mu = 0$, $\sigma = 1$.
 The friction coefficients $\gamma_i$ can be chosen the same for all
-particles or as $\gamma_i = m_i\,\xi_i$, where the friction constants
-$\xi_i$ can be different for different groups of atoms. 
+particles or as $\gamma_i = m_i\,\gamma_i$, where the friction constants
+$\gamma_i$ can be different for different groups of atoms. 
 Because the system is assumed to be over-damped, large timesteps
 can be used. LINCS should be used for the constraints since SHAKE
 will not converge for large atomic displacements.
