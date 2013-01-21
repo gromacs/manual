@@ -30,8 +30,9 @@
 \label{ch:install}
 \section{Installation}
 The entire {\gromacs} package is Free Software, licensed under the GNU
-General Public License. The main distribution site is our WWW server at
-{\wwwpage}. 
+Lesser General Public License; either version 2.1 of the License, or
+(at your option) any later version.
+The main distribution site is our WWW server at {\wwwpage}. 
 
 The package is mainly distributed as source code, but others provide
 packages for Linux and Mac. Check your Linux distribution tools
@@ -62,19 +63,31 @@ and several additional on-line resources like contributed topologies, etc.
 \section{Single or Double precision}
 {\gromacs} can be compiled in either single\index{single
 precision|see{precision, single}}\index{precision, single} or
-\pawsindex{double}{precision}. The default choice is single precision,
-but it is easy to turn on double precision by selecting the {\tt
---disable-float} option to the configuration script.  Double precision
-will be 0 to 50\% slower than single precision depending on the
+\pawsindex{double}{precision}. It is very important to note here that
+single precision is actually mixed precision. Using single precision
+for all variables would lead to a significant reduction in accuracy.
+Although in single precision all state vectors, i.e. particle coordinates,
+velocities and forces, are stored in single precision, critical variables
+are double precision. A typical example of the latter is the virial,
+which is a sum over all forces in the system, which have varying signs.
+In addition, in many parts of the code we managed to avoid double precision
+for arithmetic, by paying attention to summation order or reorganization
+of mathematical expressions. The default choice is single precision,
+but it is easy to turn on double precision by adding the option
+{\tt -DGMX_DOUBLE=on} to {\tt cmake}. Double precision
+will be 20 to 100\% slower than single precision depending on the
 architecture you are running on. Double precision will use somewhat
 more memory and run input, energy and full-precision trajectory files
-will be almost twice as large.  Assembly loops are available in single
-and double precision on Pentium 4, Opteron and Itanium processors.  On
-PowerPC processors containing the Altivec unit only single precision
-is possible. On older Athlon and Pentium 3 processors only the single
-precision code is available, due to hardware limitations. All other
-processors use either C or Fortran code for the compute intensive
-inner loops.
+will be almost twice as large.  SIMD (single-instruction multiple-data)
+intrinsics non-bonded force and/or energy kernels are available for x86
+hardware in single and double precision in different SSE and AVX flavors;
+the minimum requirement is SSE2.
+IBM Blue Gene Q intrinsics will be available soon. Some other parts of
+the code, especially PME, also employ x86 SIMD intrinsics. All other
+hardware will use optimized C kernels. The Verlet non-bonded scheme
+uses SIMD non-bonded kernels that are C pre-processor macro driven,
+therefore it is straightforward to implement SIMD acceleration
+for new architectures; a guide is provided on {\wwwpage}.
 
 The energies in single precision are accurate up to the last decimal,
 the last one or two decimals of the forces are non-significant.
@@ -83,7 +96,6 @@ order of magnitude larger than the size of each element in the sum over
 all atoms (\secref{virial}).
 In most cases this is not really a problem, since the fluctuations in the
 virial can be two orders of magnitude larger than the average.
-In periodic charged systems, these errors are often negligible.
 Using cut-offs for the Coulomb interactions cause large errors
 in the energies, forces, and virial.
 Even when using a reaction-field or lattice sum method, the errors
@@ -98,9 +110,7 @@ In some cases double precision is required to get reasonable results:
 \item normal mode analysis,
 for the conjugate gradient or l-bfgs minimization and the calculation and
 diagonalization of the Hessian
-\item calculation of the constraint force between two large groups of atoms
-\item energy conservation (this can only be done without temperature coupling
-and without cut-offs)
+\item long-term energy conservation, especially for large systems
 \end{itemize}
 
 \section{Porting {\gromacs}}
@@ -113,71 +123,19 @@ features:
 \item   A UNIX-like operating system (BSD 4.x or SYSTEM V rev.3 or higher) 
         or UNIX-like libraries running under {\eg} Cygwin
 \item   an ANSI C compiler 
-\item   optionally a Fortran-77 compiler or Fortran-90 compiler
-        for faster (on some computers) inner loop routines
-\item   optionally the Nasm assembler to use the assembly inner loops
-        on x86 processors.
 \end{enumerate}
 
 There are some additional features in the package that require extra
 stuff to be present, but it is checked for in the configuration script
 and you will be warned if anything important is missing.
 
-That's the requirements for a single processor system. If you want
-to compile {\gromacs} for a multiple processor environment you also
-need a MPI library (Message-Passing Interface) to perform the 
+That's the requirements for a single node system. If you want
+to compile {\gromacs} for running a single simulation across multiple nodes,
+you also need an MPI library (Message-Passing Interface) to perform the 
 parallel communication. This is always shipped with supercomputers, and
 for workstations you can find links to free MPI implementations through
 the {\gromacs} homepage at {\wwwpage}.
 
-\subsection{Multi-processor Optimization}
-
-If you want to, you could write your own optimized communication
-(perhaps using specific libraries for your hardware) instead
-of MPI. This should never be necessary for normal use
-(we haven't heard of a modern computer where it isn't possible
-to run MPI), but if you absolutely want to do it, here are some clues.
-
-The interface between the communication routines and the
-rest of the {\gromacs} system is described in the file {\tt
-\$GMXHOME/src/include/network.h} We will give a short description of the
-different routines below.
-
-\begin{description}
-\item[{\bf extern void gmx_tx(int pid,void *buf,int bufsize);}]\mbox{}\\ 
-This routine, when called with the destination processor number, a
-pointer to a (byte oriented) transfer buffer, and the size of the
-buffer will send the buffer to the indicated processor (in our case
-always the neighboring processor). The routine does {\bf not} wait
-until the transfer is finished.
-
-\item[{\bf extern void gmx_tx_wait(int pid);}]\mbox{}\\
-This routine waits until the previous, or the ongoing transmission is
-finished.
-
-\item[{\bf extern void gmx_txs(int pid,void *buf,int bufsize);}]\mbox{}\\
-This routine implements a synchronous send by calling the
-a-synchronous routine and then the wait. It might come in handy to
-code this differently.
-
-\item[{\bf extern void gmx_rx(int pid,void *buf,int bufsize);}]
-\item[{\bf extern void gmx_rx_wait(int pid);}]\vspace{-\itemsep}
-\item[{\bf extern void gmx_rxs(int pid,void *buf,int bufsize);}]\vspace{-\itemsep}\mbox{}\\
-The very same routines for receiving a buffer and waiting until the
-reception is finished.
-
-\item[{\bf extern void gmx_init(int pid,int nprocs);}]\mbox{}\\
-This routine initializes the different devices needed to do the
-communication. In general it sets up the communication hardware (if it
-is accessible) or does an initialize call to the lower level
-communication subsystem.
-
-\item[{\bf extern void gmx_stat(FILE *fp,char *msg);}]\mbox{}\\
-With this routine we can diagnose the ongoing communication. In the
-current implementation it prints the various contents of the hardware
-communication registers of the (\intel) multiprocessor boards to a
-file.
-\end{description}
 
 \section{Environment Variables}
 {\gromacs} programs may be influenced by the use of
@@ -431,26 +389,27 @@ you should consult your local documentation for details.
 \end{enumerate}
 
 \section{Running {\gromacs} in parallel}
-If you have installed the MPI (Message Passing Interface) on your computer(s)
-you can compile {\gromacs} with this library to run simulations in parallel. 
-All supercomputers are shipped with MPI libraries optimized for 
+By default {\gromacs} will be compiled with the built-in threaded MPI library.
+This library supports MPI communication between threads instead of between
+processes. To run {\gromacs} in parallel over multiple nodes in a cluster
+of a supercomputer, you need to configure and compile {\gromacs} with an external
+MPI library. All supercomputers are shipped with MPI libraries optimized for 
 that particular platform, and if you are using a cluster of workstations
-there are several good free MPI implementations. OpenMPI is preferred over MPICH variants. You can find updated links
-to these on the {\gromacs} homepage {\wwwpage}. Once you have an MPI library
-installed it's trivial to compile {\gromacs} with MPI support: Just set
-the option {\tt --enable-mpi} to the {\tt configure} script and recompile. Please see the GROMACS webpage for more detailed instructions.
-(But don't forget to {\tt make distclean} before running {\tt configure} if you have
-previously compiled with a different configuration.) If you are using a 
-supercomputer you might also want to turn of the default nice-ing of the
-{\tt mdrun} process with the {\tt --disable-nice} option.
+there are several good free MPI implementations;
+Open MPI is usually a good choice. Once you have an MPI library
+installed it's trivial to compile {\gromacs} with MPI support: Just pass
+the option {\tt -DGMX_MPI=on} to {\tt cmake} and (re-)compile. Please see
+the {\gromacs} webpage for more detailed instructions.
+Note that in addition to MPI parallelization, {\gromacs} supports
+thread-parallelization through \normindex{OpenMP}. MPI and OpenMP parallelization
+can be combined, which results in, so called, hybrid parallelization.
+See {\wwwpage} for details on use and performance of the parallelization
+schemes.
 
 For communications over multiple nodes connected by a network,
-there is usually a program called {\tt mpirun} with which you can start 
-the parallel processes. A typical command line looks like:
-{\tt mpirun -p goofus,doofus,fred 10 mdrun_mpi -s topol -v}
-
-This command runs 10 processes each on the machines goofus, doofus, and fred.
-\footnote{Example taken from Silicon Graphics manual}
+there is a program usually called {\tt mpirun} with which you can start 
+the parallel processes. A typical command line could look like:
+{\tt mpirun -np 10 mdrun_mpi -s topol -v}
 
 With the implementation of threading available by default in {\gromacs} version 4.5, 
 if you have a single machine with multiple processors you don't have to
