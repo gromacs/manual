@@ -1,0 +1,8 @@
+Code-Review+1: David van der Spoel <davidvanderspoel@gmail.com>
+Code-Review+2: Szilárd Páll <pszilard@kth.se>
+Verified+1: Jenkins Buildbot
+Submitted-by: Roland Schulz <roland@rschulz.eu>
+Submitted-at: Mon, 21 Jan 2013 01:10:12 +0100
+Reviewed-on: https://gerrit.gromacs.org/2098
+Project: manual
+Branch: refs/heads/release-4-5-patches
