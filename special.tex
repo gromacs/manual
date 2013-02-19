@@ -51,7 +51,7 @@ of the {\tt couple-moltype},{\tt couple-lambda0}, {\tt couple-lambda1}, and
 {\tt couple-intramol} mdp keywords.  Any molecule type selected in
 {\tt couple-moltype} will automatically have a $B$ state implicitly
 constructed (and the $A$ state redefined) according to the {\tt couple-lambda}
-keywords. {\tt couple-lambda0} and {\tt couple-lambda1} define the nonbonded
+keywords. {\tt couple-lambda0} and {\tt couple-lambda1} define the non-bonded
 parameters that are present in the $A$ state ({\tt couple-lambda0})
 and the $B$ state ({\tt couple-lambda1}).  The choices are 'q','vdw', and
 'vdw-q'; these indicate the Coulombic, van der Waals, or both parameters
@@ -59,13 +59,13 @@ that are turned on in the respective state.
 
 Once the end states are defined, then the path between the end states
 has to be defined. This path is defined solely in the .mdp file.
-Starting in 4.6, $\lambda$ is a vector of components, with Coulumbic,
+Starting in 4.6, $\lambda$ is a vector of components, with Coulombic,
 van der Waals, bonded, restraint, and mass components all able to be
 adjusted independently.  This makes it possible to turn off the
 Coulombic term linearly, and then the van der Waals using soft core,
 all in the same simulation.  This is especially useful for replica
 exchange or expanded ensemble simulations, where it is important to
-sample all the way from interacting to noninteracting states in the
+sample all the way from interacting to non-interacting states in the
 same simulation to improve sampling.
 
 {\tt fep-lambdas} is the default array of $\lambda$ values ranging
@@ -243,7 +243,7 @@ works for distances defined in one dimension, and the cylinder is
 oriented with its long axis along this one dimension. A second cylinder
 can be defined with {\tt r_0}, with a linear switch function that weighs
 the contribution of atoms between {\tt r_0} and {\tt r_1} with
-distance. This smoothes the effects of atoms moving in and out of the
+distance. This smooths the effects of atoms moving in and out of the
 cylinder (which causes jumps in the pull forces).
 
 \begin{figure}
@@ -345,7 +345,7 @@ can be found in ref. \cite{Kutzner2011}.
 rotation. 
 {\sf A:} Rotating the sketched shape inside the white tubular cavity can create
 artifacts when a fixed rotation axis (dashed) is used. More realistically, the
-shape would revolve like a flexible pipe-cleaner (dotted) inside the bearing (grey). 
+shape would revolve like a flexible pipe-cleaner (dotted) inside the bearing (gray). 
 {\sf B:} Fixed rotation around an axis \ve{v} with a pivot point
 specified by the vector \ve{u}. 
 {\sf C:} Subdividing the rotating fragment into slabs with separate rotation
@@ -365,7 +365,7 @@ $V\rotflex$,
 {\sf C--D:} radial motion\,2 potential $V\rotrmtwo$ and
 flexible\,2 potential $V\rotflextwo$ for $\epsilon' = 0$\,nm$^2$ {\sf (C)}
 and $\epsilon' = 0.01$\,nm$^2$ {\sf (D)}. The rotation axis is perpendicular to
-the plane and marked by $\otimes$. The light grey contours indicate Boltzmann factors
+the plane and marked by $\otimes$. The light gray contours indicate Boltzmann factors
 $e^{-V/(k_B T)}$ in the $\ve{x}_j$-plane for $T=300$\,K and
 $k=200$\,kJ/(mol$\cdot$nm$^2$). The green arrow shows the direction of the
 force $\ve{F}_{\!j}$ acting on atom $j$; the blue dashed line indicates the
@@ -1756,7 +1756,7 @@ w(x)=
 which has a value between 0 and 1.
 This definition of $w$ gives a purely explicit force in the explicit region and a purely coarse-grained force in the coarse-grained region,
 so essentially \eqnref{interpolation} only the hybrid region has mixed interactions which would not appear in a standard simulation.
-In GROMACS a $\cos^2$-like function is implemented as a weighting function:
+In {\gromacs}, a $\cos^2$-like function is implemented as a weighting function:
 \begin{equation}
 w(x)=
 \left\{\begin{array}{c@{\;:\;}r@{x}l}
@@ -1890,7 +1890,7 @@ adress_cg_grp_names = CG
 \end{verbatim}}
 
 Here we are defining an energy group {\tt CG} which consists of the coarse-grained virtual site.
-As discussed above, the coarse-grained interaction is usually tabulated. This requires the {\tt vdw-type} parameter to be set to {\tt user}. In the case where multicomponent systems are coarse-grained, an energy group has to be defined for each component. Note that all the energy groups defining coarse-grained representations have to be listed again in {\tt adress_cg_grp_names} to distinguish them from regular energy groups.\\
+As discussed above, the coarse-grained interaction is usually tabulated. This requires the {\tt vdw-type} parameter to be set to {\tt user}. In the case where multi-component systems are coarse-grained, an energy group has to be defined for each component. Note that all the energy groups defining coarse-grained representations have to be listed again in {\tt adress_cg_grp_names} to distinguish them from regular energy groups.\\
 The index file has to be updated to have a group CG which includes all the coarse-grained virtual sites. This can be done easily using the {\tt make_ndx} tool of gromacs.
 
 % LocalWords:  PMF pmf kJ mol Jarzynski BT bilayer rup mdp AFM fepmf fecalc rb
@@ -1902,7 +1902,7 @@ The index file has to be updated to have a group CG which includes all the coars
 % LocalWords:  Morokuma iJ AQ AJ initio atomtype QMatom MMatom QMMM grps et al
 % LocalWords:  QMmethod QMbasis QMMMscheme RHF DFT LYP CASSCF MMVB CASelectrons
 % LocalWords:  CASorbitals planewavecutoff STO QMcharge QMmult diabatic edr
-% LocalWords:  hyperline delocalized Coulombic
+% LocalWords:  hyperline delocalized Coulombic indices nm ccc th ps
 % LocalWords:  GTX CPUs GHz md sd bd vv avek tcoupl andersen tc OPLSAA GROMOS
 % LocalWords:  OBC obc CCMA tol pbc xyz barostat pcoupl acc gpu PLUGIN Cmake GX
 % LocalWords:  MSVC gcc installpath cmake DGMX DCMAKE functionalities GPGPU GTS
@@ -1917,6 +1917,8 @@ The index file has to be updated to have a group CG which includes all the coars
 % LocalWords:  positionrestraint es SH phenylalanine solvated sh nanometer QM
 % LocalWords:  Lennard Buckingham UK Svensson ab vsitetop co UHF MP interatomic
 % LocalWords:  AdResS adress cg grp coords TF VOTCA thermoforce tf SPC userpot
-% LocalWords:  itp sitesn atomtypes ff csg ndx Tesla CHARMM AA
-% LocalWords:  CMAP nocmap fators Monte performant lib LD DIR
+% LocalWords:  itp sitesn atomtypes ff csg ndx Tesla CHARMM AA gauss
+% LocalWords:  CMAP nocmap fators Monte performant lib LD DIR llllcc
 % LocalWords:  CMake homepage DEV overclocking GT dlopen vmd VMDDIR
+% LocalWords:  versa PME atomperatom graining forcefields hy spc OPLS
+% LocalWords:  topol multi

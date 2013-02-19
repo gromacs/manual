@@ -256,7 +256,7 @@ you should consult your local documentation for details.
 \item   {\tt GMX_DISRE_ENSEMBLE_SIZE}: the number of systems for distance restraint ensemble
         averaging. Takes an integer value.
 \item   {\tt GMX_EMULATE_GPU}: run GPU emulation on CPU hardware to get a performance estimate.  
-        Automatically triggered if nonbonded calculations are turned off using {\tt GMX_NO_NONBONDED}.
+        Automatically triggered if non-bonded calculations are turned off using {\tt GMX_NO_NONBONDED}.
 \item   {\tt GMX_ENX_NO_FATAL}: disable exiting upon encountering a corrupted frame in an {\tt .edr}
         file, allowing the use of all frames up until the corruption.
 \item   {\tt GMX_FORCE_UPDATE}: update forces when invoking {\tt \normindex{mdrun} -rerun}.
@@ -404,7 +404,7 @@ there are several good free MPI implementations;
 Open MPI is usually a good choice. Once you have an MPI library
 installed it's trivial to compile {\gromacs} with MPI support: Just pass
 the option {\tt -DGMX_MPI=on} to {\tt cmake} and (re-)compile. Please see
-the {\gromacs} webpage for more detailed instructions.
+{\wwwpage} for more detailed instructions.
 Note that in addition to MPI parallelization, {\gromacs} supports
 thread-parallelization through \normindex{OpenMP}. MPI and OpenMP parallelization
 can be combined, which results in, so called, hybrid parallelization.
@@ -418,7 +418,8 @@ the parallel processes. A typical command line could look like:
 
 With the implementation of threading available by default in {\gromacs} version 4.5, 
 if you have a single machine with multiple processors you don't have to
-use the {\tt mpirun} command, or compile with MPI. Instead, you can allow GROMACS to determine the number of threads automatically, or use the {\tt mdrun} option {\tt -nt}:
+use the {\tt mpirun} command, or compile with MPI. Instead, you can
+allow {\gromacs} to determine the number of threads automatically, or use the {\tt mdrun} option {\tt -nt}:
 {\tt mdrun -nt 8 -s topol.tpr}
 
 Check your local manuals (or online manual) for exact details
@@ -456,4 +457,20 @@ Please check {\wwwpage} for up to date information on GPU usage.
 % LocalWords:  unbuffered SGI npri mdrun covar nmeig setenv XPM XVG EPS
 % LocalWords:  PDB xvg xpm eps pdb xmgrace ghostview rasmol GMXTIMEUNIT fs dssp
 % LocalWords:  mpi distclean ing mpirun goofus doofus fred topol np
-% LocalWords:  internet
+% LocalWords:  internet gromacs DGMX cmake SIMD intrinsics AVX PME XN
+% LocalWords:  Verlet pre config CONSTRAINTVIR MAXBACKUP TPI ngmx mdp
+% LocalWords:  LONGFORMAT DISTGCT CPT tpr cpt CUDA EWALD TWINCUT rvdw
+% LocalWords:  rcoulomb STREAMSYNC cudaStreamSynchronized ECC GPUs sc
+% LocalWords:  ZYX PERF GPU PINHT hyperthreading DISRE NONBONDED ENX
+% LocalWords:  edr ENER gpu FSYNC ENV LJCOMB TOL MAXCONSTRWARN LINCS
+% LocalWords:  SOLV NBLISTCG NBNXN XNN ALLVSALL cudaStreamSynchronize
+% LocalWords:  USR SIGINT SIGTERM SIGUSR NODECOMM intra PULLVIR multi
+% LocalWords:  NOCHARGEGROUPS NOPREDICT NSCELL NCG NTHREADS OpenMP CP
+% LocalWords:  PMEONEDD Coulombic der Waals SCSIGMA TPIC GMXNPRIALL
+% LocalWords:  GOMP KMP pme NSTLIST ENVVAR nstlist startup OMP NUM ps
+% LocalWords:  ACC SCF BASENAME Orca CPMCSCF MCSCF DEVEL EXE GKRWIDTH
+% LocalWords:  MAXRESRENUM grompp FFRTP TER NXXX CXXX rtp GZIP gunzip
+% LocalWords:  GMXFONT ns MEM MULTIPROT multiprot NCPUS CPUs OPENMM
+% LocalWords:  PLUGIN OpenMM plugins SASTEP TESTMC eneconv VMD VMDDIR
+% LocalWords:  XMGR xmgr parallelization nt online Nvidia nb cpu
+% LocalWords:  testverlet grommp

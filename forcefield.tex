@@ -354,7 +354,7 @@ using r$_1$ = 2 and r$_c$ = 4.}
 \end{figure}
 
 \subsection{Modified short-range interactions with Ewald summation}
-When \normindex{Ewald sum}mation or \seeindex{particle-mesh
+When Ewald summation\index{Ewald sum} or \seeindex{particle-mesh
 Ewald}{PME}\index{Ewald, particle-mesh} is used to calculate the
 long-range interactions, the 
 short-range Coulomb potential must also be modified, similar to the
@@ -1065,7 +1065,7 @@ potential.
 
 This way an atom can satisfy two incompatible distance restraints 
 {\em on average} by moving between two positions. 
-An example would be an amino acid sidechain that is rotating around
+An example would be an amino acid side-chain that is rotating around
 its $\chi$ dihedral angle, thereby coming close to various other groups.
 Such a mobile side chain can give rise to multiple NOEs that can not be
 fulfilled by a single structure.
@@ -1100,7 +1100,7 @@ k^a_{dr}\sqrt{(r_{ij}-r_0)(\bar{r}_{ij}-r_0)}\frac{\rvij}{r_{ij}}
 \end{array} \right.
 \eeq
 
-\subsubsection{Averaging over multiple pairs\swapindexquiet{ensemble-averged}{distance restraint}} 
+\subsubsection{Averaging over multiple pairs\swapindexquiet{ensemble-averaged}{distance restraint}} 
 
 Sometimes it is unclear from experimental data which atom pair
 gives rise to a single NOE, in other occasions it can be obvious that
@@ -1452,7 +1452,7 @@ a single shell particle~\cite{Maaren2001a}.
 Based on early work by \normindex{Thole}~\cite{Thole81}, Roux and
 coworkers have implemented potentials for molecules like
 ethanol~\cite{Lamoureux2003a,Lamoureux2003b,Noskov2005a}. Within such
-molecules, there are intramolecular interactions between shell
+molecules, there are intra-molecular interactions between shell
 particles, however these must be screened because full Coulomb would
 be too strong. The potential between two shell particles $i$ and $j$ is:
 \newcommand{\rbij}{\bar{r}_{ij}}
@@ -1724,7 +1724,7 @@ r_A &=& \left(\alpha \sigma_A^{48} \LAM^p + r^{48} \right)^\frac{1}{48}
     \\
 r_B &=& \left(\alpha \sigma_B^{48} \LL^p + r^{48} \right)^\frac{1}{48}
 \eea
-This ``1-1-48'' path is also implemented in Gromacs. Note that for this path the soft core $\alpha$
+This ``1-1-48'' path is also implemented in {\gromacs}. Note that for this path the soft core $\alpha$
 should satisfy $0.001 < \alpha < 0.003$,rather than $\alpha \approx
 0.5$.
 
@@ -2113,7 +2113,7 @@ atoms are in the same plane.}
       
 The new 4fdn construct is identified with a `type' value of 2 in the topology. The earlier 4fd
 type is still supported internally (`type' value 1), but it should not be used for
-new simulations. All current Gromacs tools will automatically generate type 4fdn instead.
+new simulations. All current {\gromacs} tools will automatically generate type 4fdn instead.
 
 
 \item[{\bf\sf N.}]\label{subsec:vsiteN} A linear combination of $N$ atoms with relative
@@ -2265,7 +2265,7 @@ restriction as holds for the energy (see \secref{ecorr}).
 %\ifthenelse{\equal{\gmxlite}{1}}{}{
 \section{Long Range Electrostatics}
 \label{sec:lr_elstat}
-\subsection{\normindex{Ewald sum}mation}
+\subsection{Ewald summation\index{Ewald sum}}
 \label{sec:ewald}
 The total electrostatic energy of $N$ particles and their periodic
 images\index{periodic boundary conditions} is given by
@@ -2336,7 +2336,7 @@ Darden~\cite{Darden93} to improve the performance of the
 reciprocal sum. Instead of directly summing wave vectors, the charges
 are assigned to a grid using interpolation. The implementation in
 {\gromacs} uses cardinal B-spline interpolation~\cite{Essmann95},
-which is refered to as smooth PME (SPME).
+which is referred to as smooth PME (SPME).
 The grid is then Fourier transformed with a 3D FFT algorithm and the
 reciprocal energy term obtained by a single sum over the grid in
 k-space.
@@ -2511,7 +2511,7 @@ in~\cite{Buuren93b,Mark94}.  As noted by {\tt pdb2gmx}, this force field is
 ``deprecated,'' indicating that newer, perhaps more reliable, versions of this
 parameter set are available.  For backwards compatibility, it is maintained 
 in the current release.  Should you have a justifiable reason to use this
-force field, all necessary files are provided in the {\tt gmx.ff} subdirectory
+force field, all necessary files are provided in the {\tt gmx.ff} sub-directory
 of the {\gromacs} library.  See also the note in~\ssecref{atomtype}.
 
 \subsubsection{All-hydrogen force field}
@@ -2533,7 +2533,7 @@ by {\tt pdb2gmx}.
 The \gromosv{96} force field is a further development of the \gromosv{87} force field.
 It has improvements over the \gromosv{87} force field for proteins and small molecules.
 {\bf Note} that the sugar parameters present in 53A6 do correspond to those published in 
-JCC 2004 vol 25 pag 1656, which are different from those present in 45A4, which
+2004\cite{Oostenbrink2004}, which are different from those present in 45A4, which
 is not included in {\gromacs} at this time.  The 45A4 parameter set corresponds to a later
 revision of these parameters. 
 The \gromosv{96} force field is not, however, recommended for use with long alkanes and
@@ -2631,7 +2631,7 @@ Coarse-grained models are designed to reproduce certain properties of a referenc
 \end{itemize}
 \end{itemize}
 
-Note that coarse-grained potentials are state dependent (e.g. temperature, density,...) and should be reparametrized depending on the system of interest and the simulation conditions. This can for example be done using the \normindex{Versatile Object-oriented Toolkit for Coarse-Graining Applications (VOTCA)}~\cite{ruehle2009}. The package was designed to asssists in systematic coarse-graining, provides implementations for most of the algorithms mentioned above and has a well tested interface to GROMACS. It is available as open source and further information can be found at \href{http://www.votca.org}{www.votca.org}.
+Note that coarse-grained potentials are state dependent (e.g. temperature, density,...) and should be re-parametrized depending on the system of interest and the simulation conditions. This can for example be done using the \normindex{Versatile Object-oriented Toolkit for Coarse-Graining Applications (VOTCA)}~\cite{ruehle2009}. The package was designed to assists in systematic coarse-graining, provides implementations for most of the algorithms mentioned above and has a well tested interface to {\gromacs}. It is available as open source and further information can be found at \href{http://www.votca.org}{www.votca.org}.
 
 \subsection{MARTINI\index{Martini force field}}
 
@@ -2642,7 +2642,7 @@ of many systems, including proteins and membranes.
 
 The \normindex{PLUM force field}~\cite{bereau12} is an example of a solvent-free
 protein-membrane model for which the membrane was derived from structure-based
-coarse-graining~\cite{wang_jpcb10}.  A GROMACS implementation can be found at
+coarse-graining~\cite{wang_jpcb10}.  A {\gromacs} implementation can be found at
 \href{http://code.google.com/p/plumx/}{code.google.com/p/plumx}. 
 
 % LocalWords:  dihedrals centro ij dV dr LJ lj rcl jj Bertelot OPLS bh bham rf
@@ -2662,4 +2662,8 @@ coarse-graining~\cite{wang_jpcb10}.  A GROMACS implementation can be found at
 % LocalWords:  pcorr ecorr totalcoulomb dir fourierspacing ewald rtol Darden gz
 % LocalWords:  FFT parallelization MPMD mpmd pme fft hoc Gromos gromos oxygens
 % LocalWords:  virials POSITIONRED VELOCITYRED gzipped Charmm Larsson Bjelkmar
-% LocalWords:  Cuendet CMAP nocmap
+% LocalWords:  Cuendet CMAP nocmap dihedral Lennard covalent Verlet
+% LocalWords:  Berthelot nm flexwat ferguson itp harmonicangle versa
+% LocalWords:  harmonicbond atomtypes dihedraltypes equilibrated fdn
+% LocalWords:  distancerestraint LINCS Coulombic ja jb il SPME ILDN
+% LocalWords:  Hamiltonians atomtype AMBERGS rtp cmap graining VOTCA

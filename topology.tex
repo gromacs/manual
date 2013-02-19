@@ -60,7 +60,7 @@ Section \ssecref{fffiles} describes the organization of
 the files in each force field.
 
 {\bf Note:} if you construct your own topologies, we encourage you
-to upload them to our topology archive at www.gromacs.org! Just imagine
+to upload them to our topology archive at {\wwwpage}! Just imagine
 how thankful you'd have been if your topology had been available
 there before you started. The same goes for new force fields or
 modified versions of the standard force fields - contribute them
@@ -492,7 +492,7 @@ otherwise such pairs will also end up in the normal neighbor lists.
 Alternatively, this same behavior can be achieved without ever
 touching the topology, by using the {\tt couple-moltype}, {\tt
   couple-lambda0}, {\tt couple-lambda1}, and {\tt couple-intramol}
-keywords.  See sections \ssecref{fecalc} and \ssecref{dgimplement} for
+keywords.  See sections \secref{fecalc} and \secref{dgimplement} for
 more information.
 
 All three pair types always use plain Coulomb interactions,
@@ -616,7 +616,7 @@ The {\gromacs} program {\tt pdb2gmx} generates a topology for
 the input coordinate file. Several formats are supported for
 that coordinate file, but {\tt *.pdb} is the most commonly-used format
 (hence the name {\tt pdb2gmx}).
-{\tt pdb2gmx} searches for force fields in subdirectories of the {\gromacs} {\tt share/top}
+{\tt pdb2gmx} searches for force fields in sub-directories of the {\gromacs} {\tt share/top}
 directory and your working directory. Force fields are recognized from
 the file {\tt forcefield.itp} in a directory with the extension {\tt .ff}.
 The file {\tt forcefield.doc} may be present, and if so, its first line
@@ -1896,7 +1896,7 @@ tensor, not a vector.
 \label{subsec:fffiles}
 As of {\gromacs} version 4.5, 14 force fields are available by default.
 Force fields are detected by the presence of {\tt <name>.ff} directories
-in the {\gromacs} {\tt /share/top} subdirectory and/or the working directory.  
+in the {\gromacs} {\tt /share/top} sub-directory and/or the working directory.
 The information regarding the location of the force field files is printed
 by {\tt pdb2gmx} so you can easily keep track of which version of a force field
 is being called, in case you have made modifications in one location or another.
@@ -2033,4 +2033,15 @@ since they are not well-tested.}
 % LocalWords:  Onufriev OBC LINCS doc xxx residuetypes polyatomic co rotatable
 % LocalWords:  heme cysteine lysine CH NH LP amine nitrenyl ethynyl vsd MCH MNH
 % LocalWords:  chainsep resA atomA nbondsA resB atomB nbondsB newresA newresB
-% LocalWords:  rad deg lcc cc
+% LocalWords:  rad deg lcc cc nm intramolecular forcefield PME Ewald
+% LocalWords:  solvation et groupconcept PHE TYR TRP equilibrated pre
+% LocalWords:  macromolecule disulfide harmonicbond Morsebond vsiteN
+% LocalWords:  cubicbond FENEbond tabulatedinteraction harmonicangle
+% LocalWords:  harmonicrestraint bondbondcross bondanglecross genion
+% LocalWords:  quarticangle properdihedral harmonicimproperdihedral
+% LocalWords:  RBdihedral periodicimproperdihedral Fourierdihedral
+% LocalWords:  positionrestraint distancerestraint dihedralrestraint
+% LocalWords:  orientationrestraint anglerestraint usinggroups ing
+% LocalWords:  DDeLoof MBAR Duan JACS Kollman Acc Hornak ILDN AMBERGS
+% LocalWords:  Lindorff Sanbonmatsu PNAS CMAP Schuler JCC pag
+% LocalWords:  aminoacid
