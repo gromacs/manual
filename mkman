@@ -54,8 +54,8 @@ if [[ ! ${INSTALLED_OPTIONS_PROGRAM_NAME} ]]; then
     exit 1
 else
     ${INSTALLED_OPTIONS_PROGRAM_NAME} -hidden -man tex 2> /dev/null
-    [[ ${INSTALLED_OPTIONS_PROGRAM_NAME}.tex = ${OPTIONS_PROGRAM_NAME}.tex ]] || \
-        mv ${INSTALLED_OPTIONS_PROGRAM_NAME}.tex ${OPTIONS_PROGRAM_NAME}.tex
+    [[ ${INSTALLED_OPTIONS_PROGRAM_NAME##*/}.tex = ${OPTIONS_PROGRAM_NAME}.tex ]] || \
+        mv ${INSTALLED_OPTIONS_PROGRAM_NAME##*/}.tex ${OPTIONS_PROGRAM_NAME}.tex
 fi
 
 # The text emitted by the above -man tex line goes in the very first
