@@ -1,33 +1,35 @@
+% This file is part of the GROMACS molecular simulation package.
 %
-% 
-%       This source code is part of
-% 
-%        G   R   O   M   A   C   S
-% 
-% GROningen MAchine for Chemical Simulations
-% 
-%               VERSION 3.2
-% 
-% Copyright (c) 1991-2001
-% BIOSON Research Institute, Dept. of Biophysical Chemistry
-% University of Groningen, The Netherlands
-% 
-% Please refer to:
-% GROMACS: A message-passing parallel molecular dynamics implementation
-% H.J.C. Berendsen, D. van der Spoel and R. van Drunen
-% Comp. Phys. Comm. 91, 43-56 (1995)
+% Copyright (c) 2013, by the GROMACS development team, led by
+% David van der Spoel, Berk Hess, Erik Lindahl, and including many
+% others, as listed in the AUTHORS file in the top-level source
+% directory and at http://www.gromacs.org.
 %
-% and to
+% GROMACS is free software; you can redistribute it and/or
+% modify it under the terms of the GNU Lesser General Public License
+% as published by the Free Software Foundation; either version 2.1
+% of the License, or (at your option) any later version.
 %
-% GROMACS 3.0: A package for molecular simulation and trajectory analysis.
-% E. Lindahl, B. Hess and D. vand der Spoel
-% J. Mol. Mod. (2001) 7:306-317
+% GROMACS is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+% Lesser General Public License for more details.
 %
-%  Do check out http://www.gromacs.org , or mail us at gromacs@gromacs.org .
-
-% And Hey:
-% Gnomes, ROck Monsters And Chili Sauce
+% You should have received a copy of the GNU Lesser General Public
+% License along with GROMACS; if not, see
+% http://www.gnu.org/licenses, or write to the Free Software Foundation,
+% Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA.
 %
+% If you want to redistribute modifications to GROMACS, please
+% consider that scientific software is very special. Version
+% control is crucial - bugs must be traceable. We will be happy to
+% consider code for inclusion in the official distribution, but
+% derived work must not be called official GROMACS. Details are found
+% in the README & COPYING files - if they are missing, get the
+% official version at http://www.gromacs.org.
+%
+% To help us fund GROMACS development, we humbly ask that you cite
+% the research papers on the package. Check out http://www.gromacs.org
 
 \documentclass[11pt,a4paper,twoside]{gmxmanual}
 \usepackage{here,picins,fancy,array,tabularx,multicol,dcolumn,makeidx,times,ifthen,enumitem,longtable,pdflscape}
@@ -86,7 +88,7 @@
 {
 \newpage
 {\bf
-This text is a shortened version of the full GROMACS manual, written
+This text is a shortened version of the full {\gromacs} manual, written
 by David van der Spoel, Berk Hess, Erik Lindahl and others. Please
 find further information on our website {\wwwpage}.}
 
@@ -97,8 +99,9 @@ Department of Biophysical Chemistry, University of Groningen.
 Nijenborgh 4, 9747 AG Groningen, The Netherlands.\\
 \medskip
 
-\noindent \copyright\ 2001--2010:
-The GROMACS development team.\\
+\noindent \copyright\ 2001--{\gmxyear}:
+The {\gromacs} development teams at the Royal Institute of Technology and \\
+Uppsala University, Sweden.
 } 
 { 
 \cleardoublepage
@@ -127,24 +130,21 @@ USER MANUAL\\[1cm]
 {\LARGE\bf Version \gmxver}\\[1cm]
 
 {\Large 
-Written by \\
+Contributions from \\
 \vspace{5mm}
 
-Emile Apol, Rossen Apostolov, Herman J.C. Berendsen, \\
-Aldert van Buuren, P\"ar Bjelkmar, Rudi van Drunen, \\
-Anton Feenstra, Sebastian Fritsch, Gerrit Groenhof, \\
-Christoph Junghans, Peter Kasson, Per Larsson, \\
-Peiter Meulenhoff, Teemu Murtola, Szil\'ard P\'all, \\
-Sander Pronk, Roland Schulz, Michael Shirts, \\
-Alfons Sijbers, and Peter Tieleman \\}
+Mark Abraham, Emile Apol, Rossen Apostolov, \\
+Herman J.C. Berendsen, Aldert van Buuren, P\"ar Bjelkmar, \\
+Rudi van Drunen, Anton Feenstra, Sebastian Fritsch, \\
+Gerrit Groenhof, Christoph Junghans, Jochen Hub, Peter Kasson, \\
+Carsten Kutzner, Brad Lambeth, Per Larsson, Justin A. Lemkul, \\
+Erik Marklund, Peiter Meulenhoff, Teemu Murtola, \\
+Szil\'ard P\'all, Sander Pronk, Roland Schulz, \\
+Michael Shirts, Alfons Sijbers, Peter Tieleman and Maarten Wolf. \\}
 \vspace{5mm}
 
 {\LARGE Berk Hess, David van der Spoel, and Erik Lindahl.}
 \vspace{10mm}
-
-Additional contributions by \\
-Mark Abraham, Jochen Hub, Carsten Kutzner, Brad Lambeth, \\
-Justin A. Lemkul, Erik Marklund, and Maarten Wolf.
 \end{center}
 
 \vfill
@@ -155,8 +155,8 @@ Department of Biophysical Chemistry, University of Groningen. \\
 Nijenborgh 4, 9747 AG Groningen, The Netherlands.\\
 \medskip
 
-\noindent \copyright\ 2001--2010:
-The GROMACS development teams at the Royal Institute of Technology and \\
+\noindent \copyright\ 2001--{\gmxyear}:
+The {\gromacs} development teams at the Royal Institute of Technology and \\
 Uppsala University, Sweden.
 
 \vspace{5mm}
@@ -179,7 +179,7 @@ one of the mailing lists (see \wwwpage).
 We try to release an updated version of the manual whenever
 we release a new version of the software, so in general 
 it is a good idea to use a manual with the same major and
-minor release number as your GROMACS installation. 
+minor release number as your {\gromacs} installation. 
 Any revision numbers (like 3.1.1) are however independent, 
 to make it possible to implement bug fixes and manual
 improvements if necessary. 
@@ -195,10 +195,9 @@ When \normindex{citing} this document in any scientific publication
 please refer to it as:
 \begin{quote}
 \raggedright
-D. van der Spoel, E. Lindahl, B. Hess, A.~R. van Buuren, E. Apol, P.~J. Meulenhoff, D.~P. Tieleman, A.~L.~T.~M. Sij\-bers, K.~A. Feenstra, 
-R. van Drunen and H.~J.~C. Berendsen,
-\hspace{0.3em} {\em Gromacs {U}ser {M}anual version \gmxver},
-\hspace{0.3em} {\wwwpage} (2010)
+D. van der Spoel, E. Lindahl, B. Hess, and the GROMACS development team,
+\hspace{0.3em} {\em {\gromacs} {U}ser {M}anual version \gmxver},
+\hspace{0.3em} {\wwwpage} ({\gmxyear})
 \end{quote}
 However, we prefer that you cite (some of) the {\gromacs}
 papers~\cite{Bekker93a,Berendsen95a,Lindahl2001a,Spoel2005a,Hess2008b} when you publish
@@ -218,11 +217,11 @@ the world. The core development is currently taking place at
 \end{itemize}
 
 \subsection*{{\gromacs} is {\em Free Software}}
-The entire {\gromacs} package is available under the GNU General
-Public License. This means it's free as in free speech, not just that
-you can use it without paying us money. For details, check the COPYING
-file in the source code or consult
-\href{http://www.gnu.org/copyleft/gpl.html}{www.gnu.org/copyleft/gpl.html}.
+The entire {\gromacs} package is available under the GNU Lesser
+General Public License, version 2.1. This means it's free as in free
+speech, not just that you can use it without paying us money. For
+details, check the COPYING file in the source code or consult
+\href{http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html}{http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html}.
 
 The {\gromacs} source code and and selected set of binary packages are
 available on our homepage, \wwwpage. Have fun.
@@ -292,20 +291,12 @@ available on our homepage, \wwwpage. Have fun.
 \printindex
 } % Brace matches ifthenelse test for gmxlite
 
-\newpage
-\pagestyle{empty}
-\phantom{ }
-
-\vfill
-
-%\begin{center}
-%Don't forget to check out the online resources at \wwwpage.
-%\end{center}
-\cleardoublepage
-
 \end{document}
 
 % LocalWords:  Groningen der Spoel Lindahl Nijenborgh Carsten Kutzner Aldert
 % LocalWords:  Buuren Apol Meulenhoff Tieleman Sijbers Feenstra Rudi Drunen Sij
-% LocalWords:  Berendsen pretention bers Gromacs ser anual Uppsala Mainz unpubl
-% LocalWords:  Bioinformatics
+% LocalWords:  Berendsen pretention bers ser anual Uppsala Mainz unpubl
+% LocalWords:  Bioinformatics GROMACS Rossen Apostolov ar Bjelkmar
+% LocalWords:  Fritsch Gerrit Groenhof Junghans Kasson Larsson Peiter
+% LocalWords:  Teemu Murtola Szil ard Pronk Jochen Lambeth Lemkul
+% LocalWords:  Marklund Maarten

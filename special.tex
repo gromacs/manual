@@ -1,33 +1,121 @@
+% This file is part of the GROMACS molecular simulation package.
 %
-% 
-%       This source code is part of
-% 
-%        G   R   O   M   A   C   S
-% 
-% GROningen MAchine for Chemical Simulations
-% 
-%               VERSION 2.0
-% 
-% Copyright (c) 1991-1999
-% BIOSON Research Institute, Dept. of Biophysical Chemistry
-% University of Groningen, The Netherlands
-% 
-% Please refer to:
-% GROMACS: A message-passing parallel molecular dynamics implementation
-% H.J.C. Berendsen, D. van der Spoel and R. van Drunen
-% Comp. Phys. Comm. 91, 43-56 (1995)
-% 
-% Also check out our WWW page:
-% http://md.chem.rug.nl/~gmx
-% or e-mail to:
-% gromacs@chem.rug.nl
-% 
-% And Hey:
-% Giving Russians Opium May Alter Current Situation
+% Copyright (c) 2013, by the GROMACS development team, led by
+% David van der Spoel, Berk Hess, Erik Lindahl, and including many
+% others, as listed in the AUTHORS file in the top-level source
+% directory and at http://www.gromacs.org.
 %
+% GROMACS is free software; you can redistribute it and/or
+% modify it under the terms of the GNU Lesser General Public License
+% as published by the Free Software Foundation; either version 2.1
+% of the License, or (at your option) any later version.
+%
+% GROMACS is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+% Lesser General Public License for more details.
+%
+% You should have received a copy of the GNU Lesser General Public
+% License along with GROMACS; if not, see
+% http://www.gnu.org/licenses, or write to the Free Software Foundation,
+% Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA.
+%
+% If you want to redistribute modifications to GROMACS, please
+% consider that scientific software is very special. Version
+% control is crucial - bugs must be traceable. We will be happy to
+% consider code for inclusion in the official distribution, but
+% derived work must not be called official GROMACS. Details are found
+% in the README & COPYING files - if they are missing, get the
+% official version at http://www.gromacs.org.
+%
+% To help us fund GROMACS development, we humbly ask that you cite
+% the research papers on the package. Check out http://www.gromacs.org
 
 \chapter{Special Topics}
 \label{ch:special}
+
+
+\section{Free energy implementation}
+\label{sec:dgimplement}
+For free energy calculations, there are two things that must be
+specified; the end states, and the pathway connecting the end states.
+The end states can be specified in two ways.  The most straightforward
+is through the specification of end states in the topology file.  Most
+potential forms support both an $A$ state and a $B$ state. Whenever both
+states are specified, then the $A$ state corresponds to the initial free
+energy state, and the $B$ state corresponds to the final state.
+
+In some cases, the end state can also be defined in some cases without
+altering the topology, solely through the {\tt .mdp} file, through the use
+of the {\tt couple-moltype},{\tt couple-lambda0}, {\tt couple-lambda1}, and
+{\tt couple-intramol} mdp keywords.  Any molecule type selected in
+{\tt couple-moltype} will automatically have a $B$ state implicitly
+constructed (and the $A$ state redefined) according to the {\tt couple-lambda}
+keywords. {\tt couple-lambda0} and {\tt couple-lambda1} define the non-bonded
+parameters that are present in the $A$ state ({\tt couple-lambda0})
+and the $B$ state ({\tt couple-lambda1}).  The choices are 'q','vdw', and
+'vdw-q'; these indicate the Coulombic, van der Waals, or both parameters
+that are turned on in the respective state.
+
+Once the end states are defined, then the path between the end states
+has to be defined. This path is defined solely in the .mdp file.
+Starting in 4.6, $\lambda$ is a vector of components, with Coulombic,
+van der Waals, bonded, restraint, and mass components all able to be
+adjusted independently.  This makes it possible to turn off the
+Coulombic term linearly, and then the van der Waals using soft core,
+all in the same simulation.  This is especially useful for replica
+exchange or expanded ensemble simulations, where it is important to
+sample all the way from interacting to non-interacting states in the
+same simulation to improve sampling.
+
+{\tt fep-lambdas} is the default array of $\lambda$ values ranging
+from 0 to 1.  All of the other lambda arrays use the values in this
+array if they are not specified.  The previous behavior, where the
+pathway is controlled by a single $\lambda$ variable, can be preserved
+by using only {\tt fep-lambdas} to define the pathway.
+
+For example, if you wanted to first to change the Coulombic terms,
+then the van der Waals terms, changing bonded at the same time rate as
+the van der Wheals, but changing the restraints throughout the first
+two-thirds of the simulation, then you could use this $\lambda$ vector:
+
+\begin{verbatim}
+coul-lambdas           = 0.0 0.2 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0
+vdw-lambdas            = 0.0 0.0 0.0 0.0 0.4 0.5 0.6 0.7 0.8 1.0
+bonded-lambdas         = 0.0 0.0 0.0 0.0 0.4 0.5 0.6 0.7 0.8 1.0
+restraint-lambdas      = 0.0 0.0 0.1 0.2 0.3 0.5 0.7 1.0 1.0 1.0
+\end{verbatim}
+
+This is also equivalent to:
+
+\begin{verbatim}
+fep-lambdas            = 0.0 0.0 0.0 0.0 0.4 0.5 0.6 0.7 0.8 1.0
+coul-lambdas           = 0.0 0.2 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0
+restraint-lambdas      = 0.0 0.0 0.1 0.2 0.3 0.5 0.7 1.0 1.0 1.0
+\end{verbatim}
+The {\tt fep-lambda array}, in this case, is being used as the default to
+fill in the bonded and van der Waals $\lambda$ arrays.  Usually, it's best to fill
+in all arrays explicitly, just to make sure things are properly
+assigned.
+
+If you want to turn on only restraints going from $A$ to $B$, then it would be:
+\begin{verbatim}
+restraint-lambdas      = 0.0 0.1 0.2 0.4 0.6 1.0
+\end{verbatim}
+and all of the other components of the $\lambda$ vector would be left in the $A$ state.
+
+To compute free energies with a vector $\lambda$ using
+thermodynamic integration, then the TI equation becomes vector equation:
+\beq
+\Delta F = \int \langle \nabla H \rangle \cdot d\vec{\lambda}
+\eeq
+or for finite differences:
+\beq
+\Delta F \approx \int \sum \langle \nabla H \rangle \cdot \Delta\lambda
+\eeq
+
+The external {\tt pymbar} script downloaded from https://SimTK.org/home/pymbar can
+compute this integral automatically from the {\gromacs} dhdl.xvg output.
 
 \section{Potential of mean force}
 
@@ -114,11 +202,11 @@ Three different types of calculation are supported,
 and in all cases the reference distance can be constant
 or linearly changing with time.
 \begin{enumerate}
-\item{\textbf{\swapindex{Umbrella}{pulling}}}
+\item{\textbf{Umbrella pulling}\swapindexquiet{umbrella}{pulling}}
 A harmonic potential is applied between
 the centers of mass of two groups.
 Thus, the force is proportional to the displacement.
-\item{\textbf{\swapindex{Constraint}{pulling}}}
+\item{\textbf{Constraint pulling\swapindexquiet{constraint}{pulling}}}
 The distance between the centers of mass of two groups is constrained.
 The constraint force can be written to a file.
 This method uses the SHAKE algorithm but only needs 1 iteration to be
@@ -247,7 +335,7 @@ is small compared to the bond lengths.
 
 This module can be used to enforce the rotation of a group of atoms, as {\eg}
 a protein subunit. There are a variety of rotation potentials, among them
-complex ones that allow flexible adaptions of both the rotated subunit as
+complex ones that allow flexible adaptations of both the rotated subunit as
 well as the local rotation axis during the simulation. An example application 
 can be found in ref. \cite{Kutzner2011}.
 
@@ -257,7 +345,7 @@ can be found in ref. \cite{Kutzner2011}.
 rotation. 
 {\sf A:} Rotating the sketched shape inside the white tubular cavity can create
 artifacts when a fixed rotation axis (dashed) is used. More realistically, the
-shape would revolve like a flexible pipe-cleaner (dotted) inside the bearing (grey). 
+shape would revolve like a flexible pipe-cleaner (dotted) inside the bearing (gray). 
 {\sf B:} Fixed rotation around an axis \ve{v} with a pivot point
 specified by the vector \ve{u}. 
 {\sf C:} Subdividing the rotating fragment into slabs with separate rotation
@@ -277,7 +365,7 @@ $V\rotflex$,
 {\sf C--D:} radial motion\,2 potential $V\rotrmtwo$ and
 flexible\,2 potential $V\rotflextwo$ for $\epsilon' = 0$\,nm$^2$ {\sf (C)}
 and $\epsilon' = 0.01$\,nm$^2$ {\sf (D)}. The rotation axis is perpendicular to
-the plane and marked by $\otimes$. The light grey contours indicate Boltzmann factors
+the plane and marked by $\otimes$. The light gray contours indicate Boltzmann factors
 $e^{-V/(k_B T)}$ in the $\ve{x}_j$-plane for $T=300$\,K and
 $k=200$\,kJ/(mol$\cdot$nm$^2$). The green arrow shows the direction of the
 force $\ve{F}_{\!j}$ acting on atom $j$; the blue dashed line indicates the
@@ -892,7 +980,7 @@ measures only angular differences, not radial ones.
 \subsubsection*{Angle Determination by Searching the Energy Minimum}
 Alternatively, for {\tt rot\_fit\_method = potential}, the angle of the rotation 
 group is determined as the angle for which the rotation potential energy is minimal.
-Therfore, the used rotation potential is additionally evaluated for a set of angles 
+Therefore, the used rotation potential is additionally evaluated for a set of angles
 around the current reference angle. In this case, the {\tt rotangles.log} output file
 contains the values of the rotation potential at the chosen set of angles, while 
 {\tt rotation.xvg} lists the angle with minimal potential energy.
@@ -982,7 +1070,7 @@ period 13~fs, the next shortest periods are around 20~fs, which will
 allow a maximum time step of about 4~fs.
 
 Removing the bond-angle degrees of freedom from hydrogen atoms can
-best be done by defining them as \normindex{virtual interaction-sites}
+best be done by defining them as \normindex{virtual interaction sites}
 instead of normal atoms. Whereas a normal atom is connected to the molecule
 with bonds, angles and dihedrals, a virtual site's position is calculated
 from the position of three nearby heavy atoms in a predefined manner
@@ -1158,7 +1246,7 @@ preserved. See \figref{vsitehydro}D.
 
 \end{itemize}
 
-\section{\normindex{Viscosity} calculation}
+\section{Viscosity calculation\index{viscosity}}
 
 The shear viscosity is a property of liquids that can be determined easily  
 by experiment. It is useful for parameterizing a force field
@@ -1263,7 +1351,7 @@ correlation time of the liquid.
 Two quantities are written to the energy file, along with their averages
 and fluctuations: $V$ and $1/\eta$, as obtained from (\ref{visc}).
 
-\section{\normindex{Tabulated interaction function}s}
+\section{Tabulated interaction functions\index{tabulated interaction functions}}
 \subsection{Cubic splines for potentials}
 \label{subsec:cubicspline}
 In some of the inner loops of {\gromacs}, look-up tables are used 
@@ -1332,7 +1420,7 @@ program.
 
 \subsection{User-specified potential functions}
 \label{subsec:userpot}
-You can also use your own \swapindex{potential}{function}s 
+You can also use your own \index{potential function}s 
 without editing the {\gromacs} code. 
 The potential function should be according to the following equation
 \beq
@@ -1627,7 +1715,7 @@ The details of implementation described in this section were published in~\cite{
 Every molecule needs a well-defined mapping point (usually the center of mass)
 but any other linear combination of particle coordinates is also sufficient. 
 In the topology the mapping point is defined by a virtual site. The forces in the coarse-grained region are functions of the mapping point positions only.
-In this implementation molecules are modeled by charge groups, which actually allows to have multiple mapping points per molecule. This can be useful for bigger molecules like polymers. In that case one has to also extend the AdResS description to bonded interactions~\cite{Praprotnik2011}, which will be implemented into Gromacs in one of the future versions.
+In this implementation molecules are modeled by charge groups or sets of charge groups, which actually allows one to have multiple mapping points per molecule. This can be useful for bigger molecules like polymers. In that case one has to also extend the AdResS description to bonded interactions~\cite{Praprotnik2011}, which will be implemented into \gromacs in one of the future versions.
 
 The force between two molecules is given by~\cite{Praprotnik2005}
 \footnote{Note that the equation obeys Newton's third law, which is not the case for other interpolation schemes~\cite{DelleSite2007}.}:
@@ -1635,7 +1723,7 @@ The force between two molecules is given by~\cite{Praprotnik2005}
 \vec{F}_{\alpha\beta}=w_\alpha w_\beta \vec{F}^\mathrm{ex,mol}_{\alpha\beta} + \left[1-w_\alpha w_\beta\right] \vec{F}^\mathrm{cg,mol}_{\alpha\beta}~,
 \label{eqn:interpolation}
 \end{equation}
-where $\alpha$ and $\beta$ label the two molecules and $w_\alpha$, $w_\beta$ are the adaptive weights of the two molecules. The type of weighting is determined by the {\tt adress-site} option.
+where $\alpha$ and $\beta$ label the two molecules and $w_\alpha$, $w_\beta$ are the adaptive weights of the two molecules.
 
 The first part, which represents the explicit interaction of the molecules, can be written as:
 \begin{equation}
@@ -1643,9 +1731,19 @@ The first part, which represents the explicit interaction of the molecules, can 
 \end{equation}
 where $\vec{F}^\mathrm{ex}_{ij}$ is the force between the $i$th atom  in  $\alpha$th molecule and the $j$th atom in the $\beta$th molecule, which is given by an explicit force field.
 The second part of \eqnref{interpolation} comes from the coarse-grained interaction of the molecules.
-The coarse-grained force field is usually derived from the atomistic system by structure-based coarse-graining (see \secref{cg-forcefields}). In the toplogy, the coarse-grained interaction is defined by the the mapping point virtual site (both tabulated and analytical potentials can be used). To specify which atoms belong to a coarse-grained representation, energy groups are used.
-Each coarse-grained interaction has to be associated with a specific energy group. The energy groups which are treated as coarse-grained interactions are then listed in {\tt adress_cg_grp_names}.
-The most important element of this interpolation (see \eqnref{interpolation}) is the adaptive weighting function (for illustration see \figref{adress}):
+In \gromacs a slightly extended case is implemented:
+\begin{equation}
+  \vec{F}_{\alpha\beta}=\sum_{i\in\alpha}\sum_{j\in\beta} w_i w_j \vec{F}^\mathrm{ex}_{ij} + \left[1-w_\alpha w_\beta\right] \vec{F}^\mathrm{cg,mol}_{\alpha\beta}~,
+\label{eqn:interpolation2}
+\end{equation}
+where $w_i$ and $w_j$ are atom-wise weights, which are determined by the {\tt adress-site} option. For {\tt adress-site} being the center of mass, atom $i$ has the weight of the center of mass of its \emph{charge group}.
+The weight $w_\alpha$ of molecule $\alpha$ is determined by the position of coarse-grained particle, which is constructed as a virtual site from the atomistic particles as specified in the topology.
+This extension allows one to perform all kind of AdResS variations, but the common case can be recovered by using a center of mass virtual site in the topology, {\tt adress-site=COM} and putting all atoms (except the virtual site representing the coarse-grained interaction) of a molecule into one charge group.
+For big molecules, it is sometimes useful to use an atom-based weight, which can be either be achieved by setting {\tt adress-site=atomperatom} or putting every atom into a separate charge group (the center of mass of a charge group with one atom is the atom itself).
+
+The coarse-grained force field $\vec{F}^\mathrm{cg}$ is usually derived from the atomistic system by structure-based coarse-graining (see \secref{cg-forcefields}). To specify which atoms belong to a coarse-grained representation, energy groups are used.
+Each coarse-grained interaction has to be associated with a specific energy group, which is why the virtual sites representing the coarse-grained interactions also have to be in different charge groups. The energy groups which are treated as coarse-grained interactions are then listed in {\tt adress_cg_grp_names}.
+The most important element of this interpolation (see \eqnref{interpolation} and \eqnref{interpolation2}) is the adaptive weighting function (for illustration see \figref{adress}):
 \begin{equation}
 w(x)=
 \left\{\begin{array}{c@{\;:\;}l}
@@ -1658,7 +1756,7 @@ w(x)=
 which has a value between 0 and 1.
 This definition of $w$ gives a purely explicit force in the explicit region and a purely coarse-grained force in the coarse-grained region,
 so essentially \eqnref{interpolation} only the hybrid region has mixed interactions which would not appear in a standard simulation.
-In GROMACS a $\cos^2$-like function is implemented as a weighting function:
+In {\gromacs}, a $\cos^2$-like function is implemented as a weighting function:
 \begin{equation}
 w(x)=
 \left\{\begin{array}{c@{\;:\;}r@{x}l}
@@ -1689,7 +1787,7 @@ R_\alpha=\frac{\sum_{i\in\alpha}m_i r_i}{\sum_{i\in\alpha}m_i}
 \end{equation}
 Note that the value of the weighting function depends exclusively on the mapping of the molecule.
 
-The interpolation of forces (see \eqnref{interpolation}) can produce inhomogeneities in the density and affect the structure of the system in the hybrid region.
+The interpolation of forces (see \eqnref{interpolation2}) can produce inhomogeneities in the density and affect the structure of the system in the hybrid region.
 
 One way of reducing the inhomogeneities due to the force interpolation is the so-called thermodynamic force (TF)~\cite{Poblete2010}.
 It consists of a~space-dependent external field applied in the region of interpolation in order to produce a flat density profile, based on thermodynamic consistency considerations. The force provides the amount of work necessary to compensate the difference in excess chemical potential responsible for the density artifacts.
@@ -1697,19 +1795,19 @@ The TF acts on the coarse-grained site of the molecules and can be used to corre
 The thermodynamic force can be determined via an iterative procedure, which is described in detail in the \href{http://code.google.com/p/votca/downloads/list?&q=manual}{manual} of the \normindex{VOTCA package}~\cite{ruehle2009}. Setting the {\tt adress-interface-correction} to {\tt thermoforce} enables the TF correction and\newline{\tt adress-tf-grp-names} defines the energy groups to act on.
 
 \subsection{Example: Adaptive resolution simulation of water}\label{subsec:adressexample}
-In this section the set up of  an adaptive resolution simulation coupling atomistic SPC ~\cite{Berendsen81} water to its coarse-grained represenation will be explained (as used in \cite{Fritsch2012b}).
+In this section the set up of  an adaptive resolution simulation coupling atomistic SPC ~\cite{Berendsen81} water to its coarse-grained representation will be explained (as used in \cite{Fritsch2012b}).
 The following steps are required to setup the simulation:
 \begin{itemize}
 \item Perform a reference all-atom simulation
 \item Create a coarse-grained representation and save it as tabulated interaction function 
 \item Create a hybrid topology for the SPC water
-\item Modify the atomistic coordinate file to include the coarse grained represenation
+\item Modify the atomistic coordinate file to include the coarse grained representation
 \item Define the geometry of the adaptive simulation in the grompp input file
 \item Create an index file
 \end{itemize}
-The coarse-grained representation of the interaction is stored as tabulated interaction funtion see \ssecref{userpot}. The convention is to use the $C^{(12)}$  columns with the  $C^{(12)}$- coefficient set to 1. All other columns should be zero. The VOTCA manual has detailed instructions and a tutorial for spc water on how to coarse-grain the interaction using various techniques. 
-Here we named the coarse grained interaction CG, so the corresponding tabulated file is {\tt table_CG_CG.xvg}. To create the topology one can start from the atomistc topology file (e.g. share/gromacs/top/oplsaa.ff/spc.itp), we are assuming rigid water here. In the VOTCA tutorial the file is named {\tt hybrid_spc.itp}.
-The only difference to the atomistic toplogy is the addition of a coarse-grained virtual site:
+The coarse-grained representation of the interaction is stored as tabulated interaction function see \ssecref{userpot}. The convention is to use the $C^{(12)}$  columns with the  $C^{(12)}$- coefficient set to 1. All other columns should be zero. The VOTCA manual has detailed instructions and a tutorial for SPC water on how to coarse-grain the interaction using various techniques.
+Here we named the coarse grained interaction CG, so the corresponding tabulated file is {\tt table_CG_CG.xvg}. To create the topology one can start from the atomistic topology file (e.g. share/gromacs/top/oplsaa.ff/spc.itp), we are assuming rigid water here. In the VOTCA tutorial the file is named {\tt hybrid_spc.itp}.
+The only difference to the atomistic topology is the addition of a coarse-grained virtual site:
 {\small
 \begin{verbatim}
 [ moleculetype ]
@@ -1754,8 +1852,8 @@ Adaptive water
 [ molecules ]
 SOL    8507
 \end{verbatim}}
-The $\sigma$ and $\epsilon$ values coorsepond to $C_6=1$ and $C_{12}=1$ and thus the table file should contain the coarse-grained interaction in either the $C_6$ or $C_{12}$ column. In the example the OPLS forcfield is used where $\sigma$ and $\epsilon$ are specified.
-Note that for forcefields which define atomtypes directly in terms of $C_6$ and $C_{12}$ ( like {\tt gmx.ff} ) one can simply set $C_6=0$ and $C_{12}=1$. See section \ssecref{userpot} for more details on tabulated interactions. Since now the water molecule has a virtual site the coordinate file also needs to include that.
+The $\sigma$ and $\epsilon$ values correspond to $C_6=1$ and $C_{12}=1$ and thus the table file should contain the coarse-grained interaction in either the $C_6$ or $C_{12}$ column. In the example the OPLS force field is used where $\sigma$ and $\epsilon$ are specified.
+Note that for force fields which define atomtypes directly in terms of $C_6$ and $C_{12}$ ( like {\tt gmx.ff} ) one can simply set $C_6=0$ and $C_{12}=1$. See section \ssecref{userpot} for more details on tabulated interactions. Since now the water molecule has a virtual site the coordinate file also needs to include that.
 {\small
 \begin{verbatim}
 adaptive water coordinates
@@ -1792,347 +1890,8 @@ adress_cg_grp_names = CG
 \end{verbatim}}
 
 Here we are defining an energy group {\tt CG} which consists of the coarse-grained virtual site.
-As discussed above, the coarse-grained interaction is usually tabulated. This requires the {\tt vdw-type} parameter to be set to {\tt user}. In the case where multicomponent systems are coarse-grained, an energy group has to be defined for each component. Note that all the energy groups defining coarse-grained representations have to be listed again in {\tt adress_cg_grp_names} to distinguish them from regular energy groups.\\
+As discussed above, the coarse-grained interaction is usually tabulated. This requires the {\tt vdw-type} parameter to be set to {\tt user}. In the case where multi-component systems are coarse-grained, an energy group has to be defined for each component. Note that all the energy groups defining coarse-grained representations have to be listed again in {\tt adress_cg_grp_names} to distinguish them from regular energy groups.\\
 The index file has to be updated to have a group CG which includes all the coarse-grained virtual sites. This can be done easily using the {\tt make_ndx} tool of gromacs.
-
-\section{{\gromacs} on GPUs}
-
-{\gromacs} 4.5 provides support for GPU acceleration through 
-the \href{https://simtk.org/home/openmm}{OpenMM library}. 
-Although limited in functionality compared to the CPU algorithms of standard {\gromacs},
-{\gromacs}-GPU gives a preview of GPU-accelerated MD which we expect to be an important direction in the future. 
-The following should be noted before using the accelerated {\tt mdrun-gpu}:
-\begin{itemize}
-\item The current release runs only on modern, CUDA compatible NVIDIA GPU hardware 
-(for details see section~\ref{subsec:compatibility}). Make sure that the necessary CUDA drivers and 
-libraries for your operating system are already installed. 
-\item Only single-GPU simulations are supported.
-\item Only a relatively small subset of the {\gromacs} features and options are supported 
-with the  current OpenMM-based implementation. See section~\ref{subsec:features} for 
-a detailed list.
-\item Consumer-level GPU cards are known to often have problems with faulty memory.
-It is strongly recommended that a full memory check of the cards is done at least once
-(using option {\tt memtest=full}). A partial memory check (using option {\tt memtest=15}) 
-before and after the simulation run would help spot problems resulting from overheating 
-of the graphics card.
-\item The maximum size of the simulated systems depends on the GPU used. With
-high-end cards, like GeForce GTX 480 or Tesla 2050, systems of size up to 200,000 atoms 
-have been successfully simulated.
-\item In order to take a full advantage of the GPU platform features, many algorithms
-have been implemented in a very different way than they are on the CPUs.
-Therefore, numerical correspondence between some properties of the system's state
-should not be expected. Moreover, the values will likely vary when simulations are
-done on different hardware. However, sufficiently long trajectories
-should produce comparable statistical averages.
-\item Frequent retrieval of system state information such as
-trajectory coordinates and energies can greatly influence the performance
-of the program due the overhead of CPU$\leftrightarrow$GPU communication.
-\item MD algorithms are complex and often do not translate very well onto streaming architectures.
-Realistic expectations about the achievable speed-up from tests with a GeForce 400 series card:
-for small protein systems in implicit solvent using all-vs-all kernels the speedup 
-can be up to 10-15x, but in most other setups involving cutoffs and PME, 
-performance is close to the one on a modern 4 core CPU (e.g. Intel Core i7-930).
-\end{itemize}
-
-\subsection{Supported features}\label{subsec:features}
-
-\begin{itemize}
-\item \textbf{Integrators:} {\tt md/md-vv/md-vv-avek}, {\tt sd/sd1} and {\tt bd}.\\
-OpenMM implements only the velocity-Verlet algorithm for MD simulations.
-The option {\tt md} is accepted, but keep in mind that the actual algorithm is \emph{not} leap-frog.
-Thus all three options {\tt md}, {\tt md-vv}, and {\tt md-vv-avek} are equivalent.
-Similarly, {\tt sd} and {\tt sd1} are equivalent.
-\item \textbf{Long-range interactions:} {\tt Reaction-Field}, {\tt Ewald}, {\tt PME}, {\tt No-cutoff}
-{\tt Cut-off}.
-\begin{itemize}
-\item for No-cutoff, set {\tt rcoulomb=0} and {\tt rvdw=0}.
-\item for Ewald summation only 3D geometry is supported, and dipole correction is not.
-\item the Cut-off method is supported only for implicit solvent simulations.
-\end{itemize}
-\item \textbf{Temperature control:} Supported only with the {\tt sd/sd1}, {\tt bd},
-{\tt md/md-vv/md-vv-avek} integrators.
-OpenMM implements only the Andersen thermostat. All values for {\tt tcoupl} are
-thus accepted and equivalent to {\tt andersen}. Multiple temperature coupling groups
-are not supported, only {\tt tc-grps=System} will work.
-\item \textbf{Force fields:} Supported FF are Amber, CHARMM. {\gromos} and OPLS-AA are not supported.
-\begin{itemize}
-\item CMAP dihedrals in CHARMM are not supported, so use the {\tt -nocmap} option with {\tt pdb2gmx}.
-\end{itemize}
-\item \textbf{Implicit solvent:} Supported only with {\tt Reaction-Field} electrostatics.
-The only supported algorithm for GB is OBC, and the default {\gromacs} values for the scale fators
-are hard coded in OpenMM, {\ie} {\tt obc_alpha=1}, {\tt obc_beta=0.8} and {\tt obc_gamma=4.85} and 
-therefore can not be changed.
-\item \textbf{Constraints:} Constraints in OpenMM are done by a combination of SHAKE,
-SETTLE and CCMA. Accuracy is based on the SHAKE tolerance as set by the {\tt shake_tol} option.
-\item \textbf{Periodic Boundary Conditions:} Only {\tt pbc=xyz} and {\tt pbc=no} in rectangular cells (boxes) are supported.
-\item \textbf{Pressure control:} OpenMM implements the Monte Carlo barostat. All values for {\tt pcoupl} are thus accepted.
-\item \textbf{Simulated annealing:} Not supported.
-\item \textbf{Pulling:} Not supported. 
-\item \textbf{Restraints:} Distance, orientation, angle and dihedral restraints are not supported
-in the current implementation.
-\item \textbf{Free energy calculations:} Not supported in the current implementation.
-\item \textbf{Walls:} Not supported.
-\item \textbf{Non-equilibrium MD:} Option {\tt acc_grps} is not supported.
-\item \textbf{Electric Fields:} Not supported.
-\item \textbf{QMMM:} Not supported.
-\end{itemize}
-
-\subsection{Installing and running {\gromacs}-GPU}
-
-{\gromacs}-GPU can be installed either from the officially distributed binary or source packages. 
-We provide pre-compiled binaries built for and tested on the most common Linux, Windows, 
-and Mac OS operating systems (for details see the {\gromacs}-GPU 
-\href{http://www.gromacs.org/gpu}{download page}). 
-Using the binary distribution is highly recommended and it should 
-work in most of the cases. Below we summarize how to get the GPU accelerated {\tt mdrun-gpu} work.
-
-\subsubsection{Prerequisites}
-
-The current {\gromacs}-GPU release uses \href{https://simtk.org/home/openmm}{OpenMM} 
-acceleration, the necessary libraries and plug-ins are included in the binary 
-packages. 
-
-Both the OpenMM library and {\gromacs}-GPU require version 3.1 of
-the CUDA libraries and compatible NVIDIA driver (i.e. version $>$ 256). 
-
-Last but not least, to run GPU accelerated simulations, a CUDA-enabled 
-graphics card is necessary. Molecular dynamics algorithms 
-are very demanding and unlike in other application areas, 
-only high-end graphics cards are capable of providing performance comparable 
-to or higher then modern CPUs. For this reason, {\tt mdrun-gpu} is compatible with 
-only a subset of more performant CUDA-enabled GPUs (for detailed list see section 
-\ref{subsec:compatibility}) and by default it does not run if it detects
-incompatible hardware. 
-
-For details about compatibility of NVIDIA drivers with harthe CUDA library and GPUs consult  
-the \href{http://developer.nvidia.com/object/gpucomputing.html}{NVIDIA developer page}.
-
-Summary of prerequisites: 
-\begin{itemize}
-    \item OpenMM v2.0
-    \item NVIDIA CUDA libraries v3.1
-    \item NVIDIA drivers $\geq$v256
-    \item NVIDIA CUDA-enabled GPU
-\end{itemize}
-
-
-\subsubsection{Installing}
-
-\begin{enumerate}
-
-    \item Download and unpack the binary package for the respective OS and architecture. 
-    Copy the content of the package to your normal {\gromacs} installation directory (or to a custom location).
-    
-    {\bf Note} that the distributed {\gromacs}-GPU packages do not contain the entire set of 
-    tools and utilities included in a full {\gromacs} installation. Therefore, it is recommended to  
-    have a $\geq$v4.5 standard {\gromacs} installation along the GPU accelerated one.
-
-    \item Add the {\tt openmm/lib} directory to your library path,  {\eg} in bash:\\
-    {\small{\tt export LD_LIBRARARY_PATH=path_to_gromacs/openmm/lib:\$LD_LIBRARY_PATH}}\\
-    If there are other OpenMM versions installed, make sure that the supplied libraries have preference  
-    when running {\tt mdrun-gpu}. Also, make sure that the CUDA libraries installed match the version 
-    of CUDA that was used for compilation of {\gromacs}-GPU.
-
-    \item Set the {\tt OPENMM_PLUGIN_DIR} environment variable to contain the path to the \\ 
-    {\tt openmm/lib/plugins} directory, {\eg} in bash:\\ 
-    {\small{\tt export OPENMM_PLUGIN_DIR=path_to_gromacs/openmm/lib/plugins}}
-
-    \item At this point, running the command
-    {\tt path_to_gromacs/bin/mdrun-gpu -h} should display the standard {\tt mdrun-gpu} help  
-    which means that the binary runs and all the necessary libraries are accessible. 
-
-\end{enumerate}
-
-\subsubsection{Compiling {\tt mdrun-gpu}}
-
-The GPU accelerated {\tt mdrun} can be compiled on Linux, Mac OS and Windows 
-operating systems, both for 32- and 64-bit. Besides the prerequisites 
-discussed above, in order to compile {\tt mdrun-gpu} the following additional 
-software is required: 
-\begin{itemize}
-    \item CMake version $\geq$2.6.4
-    \item CUDA-compatible compiler: 
-        \begin{itemize}
-            \item MSVC 8 or 9 on Windows 
-            \item gcc 4.4 on Linux and Mac OS
-        \end{itemize}
-    \item CUDA toolkit 3.1
-    \item OpenMM-2.0 header files
-\end{itemize}
-{\bf Note} that the current {\gromacs}-GPU release is compatible with OpenMM  
-version 2.0. While future versions might be compatible, using the officially-supported 
-and tested OpenMM version is strongly encouraged.
-OpenMM binaries as well as source code can be obtained from the 
-\href{https://simtk.org/project/xml/downloads.xml?group_id=161}{project's homepage}.
-
-Also note that it is essential that the same version of CUDA is used to compile both
-{\tt mdrun-gpu} and the OpenMM libraries. 
-
-To compile {\tt mdrun-gpu} change to the top level directory of the source 
-tree and execute the following commands: 
-
-{\small
-\begin{verbatim}
-    export OPENMM_ROOT_DIR=path_to_custom_openmm_installpath
-    cmake  -DGMX_OPENMM=ON [-DCMAKE_INSTALL_PREFIX=desired_install_path]
-    make mdrun
-    make install-mdrun
-\end{verbatim}}
-
-
-%\subsubsection{Testing and troubleshooting}
-
-\subsubsection{{\gromacs}-GPU specific {\tt mdrun} features}
-
-Besides the usual command line options, 
-{\tt mdrun-gpu} also supports a set of ``device options'', that are meant to 
-give control over acceleration related functionalities. 
-These options can be used in the following form:
-
-{\small {\tt mdrun-gpu -device "ACCELERATION:[DEV_OPTION=VALUE,]... [OPTION].."}}
-
-The option-list prefix {\tt ACCELERATION} specifies which 
-acceleration library should be used. At the moment, the only supported value 
-is {\tt OpenMM}. This is followed by a list of comma-separated
-{\tt DEV_OPTION=VALUE} option-value pairs which define 
-parameters for the selected acceleration platform. The entire device option 
-string is \emph{case insensitive}.
-
-Below we summarize the available options (of the OpenMM acceleration library)
-and their possible values.
-
-\paragraph{Platform} Selects the GPGPU platform to be used. Currently the only 
-supported value is CUDA.  In the future, OpenCL support will be added.
-
-\paragraph{DeviceID} The numeric identifier of the CUDA device on which the 
-simulation will be carried out. The default value is 0, {\ie} the first device. 
-
-\paragraph{Memtest} GPUs, especially consumer-level devices, 
-are prone to memory errors. There might be various reasons that 
-``soft errors'' happen, including (factory) overclocking, overheating, 
-faulty hardware etc, but the result is always the same: unreliable, possibly 
-incorrect results. Therefore, {\tt mdrun-gpu} has a built-in mechanism for 
-testing the GPU memory in order to catch the obviously faulty hardware. 
-A set of tests are performed before and after each simulation, and if
-errors are detected, the execution is aborted. 
-
-Accepted values for this option are any integer $\leq$15 with an optional ``s'' 
-suffix representing the amount of time in seconds that should be spent 
-on testing; the default value is {\tt memtest=15s} (the actual time spent 
-on testing might differ slightly).
-It is possible to completely turn off memory testing by setting 
-{\tt memtest=off}, however this is not advisable.
-
-\paragraph{Force-device} Enables running {\tt mdrun-gpu} on
-devices that are not supported but CUDA-capable. Using 
-this option might results in very low performance or even 
-crashes and therefore it is not encouraged.
-
-\subsection{Hardware and software compatibility list}\label{subsec:compatibility}
-
-Compatible OpenMM versions:
-\begin{itemize}
-\item v2.0
-\end{itemize}
-
-Compatible NVIDIA CUDA versions (also see OpenMM version compatibility above): 
-\begin{itemize}
-\item v3.1
-\end{itemize}
-
-Compatible hardware (for further details consult the 
-\href{http://www.nvidia.com/object/cuda\_gpus.html}{NVIDIA CUDA compatible GPUs page}):
-\begin{itemize}
-\item G92/G94:
-    \begin{itemize}
-    \item GeForce 9800 GX2/GTX/GTX+/GT
-    \item GeForce 9800M GT
-    \item GeForce GTS 150, 250
-    \item GeForce GTX 280M, 285M
-    \item Quadro FX 4700
-    \item Quadro Plex 2100 D4
-    \end{itemize}
-\item GT200:
-    \begin{itemize}
-    \item GeForce GTX 260, 270, 280, 285, 295 
-    \item Tesla C1060, S1070, M1060
-    \item Quadro FX 4800, 5800
-    \item Quadro CX
-    \item Quadro Plex 2200 D2, 2200 S4
-    \end{itemize}
-\item GF10x (Fermi):
-    \begin{itemize}
-    \item GeForce GTX 460, 465, 470, 480       
-    \item Tesla C2050, C2070, S2050, M2050, M2070
-    \item Quadro 5000(M), 6000
-    \end{itemize}
-\end{itemize}
-
-\section{Using VMD plug-ins for trajectory file I/O}
-\index{VMD plug-ins}\index{trajectory file}{\gromacs} tools are able
-to use the plug-ins found in an existing installation of
-\href{http://www.ks.uiuc.edu/Research/vmd}{VMD} in order to read and
-write trajectory files in formats that are not native to
-{\gromacs}. You will be able to supply an AMBER DCD-format trajectory
-filename directly to {\gromacs} tools, for example.
-
-This requires a VMD installation not older than version 1.8, that your
-system provides the dlopen function so that programs can determine at
-run time what plug-ins exist, and that you build shared libraries when
-building {\gromacs}. CMake will find the vmd executable in your path, and
-from it, or the environment variable {\tt VMDDIR} at configuration or
-run time, locate the plug-ins. Alternatively, the {\tt VMD_PLUGIN_PATH}
-can be used at run time to specify a path where these plug-ins can be
-found. Note that these plug-ins are in a binary format, and that format
-must match the architecture of the machine attempting to use them.
-
-\section{Interactive Molecular Dynamics}
-{\gromacs} supports the Interactive molecular dynamics (IMD) protocol as implemented by VMD to
-control a running simulation in NAMD.  IMD allows monitoring of running simulation from a VMD client.
-In addition, the user can interact with the simulation by pulling on atoms, residues or fragments with a
-mouse or force-feedback devices.
-
-\subsection{Simulation input preparation}
-The {\gromacs} implementation allows transmission and interaction with a part of the running simulation
-only, e.g. in cases where no water molecules should be transmitted or pulled. The group is specified
-via the {\tt IMD-group} {\tt .mdp} option. When {\tt IMD-group} is empty, the IMD protocol
-is disabled and cannot be enabled via the switches in {\tt mdrun}. To interact with the entire
-system, {\tt IMD-group} has to be set to {\tt System}, which is also the default for {\tt .tpr}
-files created with an older version without IMD implementation. When using {\tt grompp}, a {\tt .gro} file
-to be used with VMD is written out ({\tt -imd} switch of {\tt grompp}).
-
-\subsection{Starting the simulation}
-Communication between VMD and {\gromacs} is achieved via tcp-sockets and thus enables controlling
-an {\tt mdrun} running locally or on a remote cluster. The port for the connection can be
-specified with the {\tt -imdport} switch of {\tt mdrun}, 8888 is the default.
-
-Every $N$ steps, the client receives the applied forces from the VMD client and sends the new coordinates to the client.
-The initial frequency for communication with the client is set to the global communication frequency but can
-be altered using the {\tt -imdfreq} switch. VMD also permits increasing or decreasing the communication
-frequency interactively.
-
-By default, the simulation starts and runs even if no IMD client is connected. This behavior is changed by the
-{\tt -imdwait} switch of {\tt mdrun}. After startup and whenever the client has disconnected, the integration
-stops until reconnection of the client.
-
-When the {\tt -imdterm} switch is used, the simulation can be terminated pressing the stop button in VMD. This is disabled by
-default.
-
-Finally, to turn on interaction with the simulation (i.e. pulling from VMD) the {\tt -imdpull} switch has to be used.
-
-Therefore, a simulation can only be monitored but not influenced from the VMD client when none of {\tt -imdwait},
-{\tt -imdterm} or {\tt -imdpull} are set. However, since the IMD protocol requires no authentication, it is not
-advisable to run simulations on a host directly reachable from an insecure environment. Secure shell forwarding of {\tt TCP}
-can be used to connect to running simulations not directly reachable from the interacting host.
-
-\subsection{Connecting from VMD}
-In VMD, first the structure corresponding to the IMD group has to be loaded (File $\rightarrow$ New Molecule\ldots). Then
-the IMD connection window has to be used (Extensions $\rightarrow$ Simulation $\rightarrow$ IMD Connect (NAMD)). In the IMD connection
-window, hostname and port have to be specified and followed by pressing Connect. Detach Sim allows disconnecting without
-terminating the simulation, while Stop Sim ends the simulation on the next neighbor searching step (if allowed by {\tt -imdterm}).
-
-The timestep transfer rate allows adjusting the communication frequency between simulation and IMD client. Setting the keep rate loads every $N^\mathrm{th}$ frame into VMD instead of discarding them when a new one is received. The displayed energies are in SI units in contrast to energies displayed from NAMD simulations.
-
 
 % LocalWords:  PMF pmf kJ mol Jarzynski BT bilayer rup mdp AFM fepmf fecalc rb
 % LocalWords:  posre grompp fs Verlet dihedrals hydrogens hydroxyl sulfhydryl
@@ -2142,10 +1901,24 @@ The timestep transfer rate allows adjusting the communication frequency between 
 % LocalWords:  rvdw energygrp mdrun pre GMXLIB mdpopt MOPAC GAMESS CPMD ONIOM
 % LocalWords:  Morokuma iJ AQ AJ initio atomtype QMatom MMatom QMMM grps et al
 % LocalWords:  QMmethod QMbasis QMMMscheme RHF DFT LYP CASSCF MMVB CASelectrons
-% LocalWords:  CASorbitals planewavecutoff STO QMcharge QMmult diabatic edr GPU
-% LocalWords:  hyperline delocalized Coulombic GPUs OpenMM NVIDIA CUDA memtest
+% LocalWords:  CASorbitals planewavecutoff STO QMcharge QMmult diabatic edr
+% LocalWords:  hyperline delocalized Coulombic indices nm ccc th ps
 % LocalWords:  GTX CPUs GHz md sd bd vv avek tcoupl andersen tc OPLSAA GROMOS
 % LocalWords:  OBC obc CCMA tol pbc xyz barostat pcoupl acc gpu PLUGIN Cmake GX
 % LocalWords:  MSVC gcc installpath cmake DGMX DCMAKE functionalities GPGPU GTS
 % LocalWords:  OpenCL DeviceID gromacs gpus html GeForce Quadro FX Plex CX GF
-% LocalWords:  VMD DCD
+% LocalWords:  VMD DCD GROningen MAchine BIOSON Groningen der Spoel Drunen Comp
+% LocalWords:  Phys Comm moltype intramol vdw Waals fep multivector pf
+% LocalWords:  pymbar dhdl xvg LINCS Entropic entropic solutes ref com iso pm
+% LocalWords:  rm prefactors equipotential potiso potisopf potpm trr
+% LocalWords:  potrm potrmpf midplanes midplane gaussians potflex vars massw av
+% LocalWords:  shure observables rccccccc vec eps dist min eqn transl nstsout
+% LocalWords:  nstrout rotangles rotslabs rottorque RMSD rmsdfit excl NH amine
+% LocalWords:  positionrestraint es SH phenylalanine solvated sh nanometer QM
+% LocalWords:  Lennard Buckingham UK Svensson ab vsitetop co UHF MP interatomic
+% LocalWords:  AdResS adress cg grp coords TF VOTCA thermoforce tf SPC userpot
+% LocalWords:  itp sitesn atomtypes ff csg ndx Tesla CHARMM AA gauss
+% LocalWords:  CMAP nocmap fators Monte performant lib LD DIR llllcc
+% LocalWords:  CMake homepage DEV overclocking GT dlopen vmd VMDDIR
+% LocalWords:  versa PME atomperatom graining forcefields hy spc OPLS
+% LocalWords:  topol multi
