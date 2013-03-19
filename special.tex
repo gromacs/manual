@@ -1789,10 +1789,10 @@ Note that the value of the weighting function depends exclusively on the mapping
 
 The interpolation of forces (see \eqnref{interpolation2}) can produce inhomogeneities in the density and affect the structure of the system in the hybrid region.
 
-One way of reducing the inhomogeneities due to the force interpolation is the so-called thermodynamic force (TF)~\cite{Poblete2010}.
-It consists of a~space-dependent external field applied in the region of interpolation in order to produce a flat density profile, based on thermodynamic consistency considerations. The force provides the amount of work necessary to compensate the difference in excess chemical potential responsible for the density artifacts.
-The TF acts on the coarse-grained site of the molecules and can be used to correct local density inhomogeneities in the hybrid region.
-The thermodynamic force can be determined via an iterative procedure, which is described in detail in the \href{http://code.google.com/p/votca/downloads/list?&q=manual}{manual} of the \normindex{VOTCA package}~\cite{ruehle2009}. Setting the {\tt adress-interface-correction} to {\tt thermoforce} enables the TF correction and\newline{\tt adress-tf-grp-names} defines the energy groups to act on.
+One way of reducing the density inhomogeneities is by the application of the so-called thermodynamic force (TF)~\cite{Poblete2010}.
+Such a force consists of a space-dependent external field applied in the hybrid region on the coarse-grained site of each molecule. It can be specified for each of the species of the system.
+The TF compensates the pressure profile~\cite{Fritsch2012b} that emerges under a homogeneous density profile. Therefore, it can correct the local density inhomogeneities in the hybrid region and it also allows the coupling of atomistic and coarse-grained representations which by construction have different pressures at the target density.
+The field can be determined by an iterative procedure, which is described in detail in the \href{http://code.google.com/p/votca/downloads/list?&q=manual}{manual} of the \normindex{VOTCA package}~\cite{ruehle2009}. Setting the {\tt adress-interface-correction} to {\tt thermoforce} enables the TF correction and\newline{\tt adress-tf-grp-names} defines the energy groups to act on.
 
 \subsection{Example: Adaptive resolution simulation of water}\label{subsec:adressexample}
 In this section the set up of  an adaptive resolution simulation coupling atomistic SPC ~\cite{Berendsen81} water to its coarse-grained representation will be explained (as used in \cite{Fritsch2012b}).
