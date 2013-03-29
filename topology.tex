@@ -1,30 +1,35 @@
+% This file is part of the GROMACS molecular simulation package.
 %
-% 
-%       This source code is part of
-% 
-%        G   R   O   M   A   C   S
-% 
-% GROningen MAchine for Chemical Simulations 
-% 
-%               VERSION 2.0
-% 
-% Copyright (c) 1991-1999
-% BIOSON Research Institute, Dept. of Biophysical Chemistry
-% University of Groningen, The Netherlands
-% 
-% Please refer to:
-% GROMACS: A message-passing parallel molecular dynamics implementation
-% H.J.C. Berendsen, D. van der Spoel and R. van Drunen
-% Comp. Phys. Comm. 91, 43-56 (1995)
-% 
-% Also check out our WWW page:
-% http://md.chem.rug.nl/~gmx
-% or e-mail to:
-% gromacs@chem.rug.nl
-% 
-% And Hey:
-% Giving Russians Opium May Alter Current Situation
+% Copyright (c) 2013, by the GROMACS development team, led by
+% David van der Spoel, Berk Hess, Erik Lindahl, and including many
+% others, as listed in the AUTHORS file in the top-level source
+% directory and at http://www.gromacs.org.
 %
+% GROMACS is free software; you can redistribute it and/or
+% modify it under the terms of the GNU Lesser General Public License
+% as published by the Free Software Foundation; either version 2.1
+% of the License, or (at your option) any later version.
+%
+% GROMACS is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+% Lesser General Public License for more details.
+%
+% You should have received a copy of the GNU Lesser General Public
+% License along with GROMACS; if not, see
+% http://www.gnu.org/licenses, or write to the Free Software Foundation,
+% Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA.
+%
+% If you want to redistribute modifications to GROMACS, please
+% consider that scientific software is very special. Version
+% control is crucial - bugs must be traceable. We will be happy to
+% consider code for inclusion in the official distribution, but
+% derived work must not be called official GROMACS. Details are found
+% in the README & COPYING files - if they are missing, get the
+% official version at http://www.gromacs.org.
+%
+% To help us fund GROMACS development, we humbly ask that you cite
+% the research papers on the package. Check out http://www.gromacs.org
 
 \chapter{Topologies}
 \label{ch:top}
@@ -55,7 +60,7 @@ Section \ssecref{fffiles} describes the organization of
 the files in each force field.
 
 {\bf Note:} if you construct your own topologies, we encourage you
-to upload them to our topology archive at www.gromacs.org! Just imagine
+to upload them to our topology archive at {\wwwpage}! Just imagine
 how thankful you'd have been if your topology had been available
 there before you started. The same goes for new force fields or
 modified versions of the standard force fields - contribute them
@@ -65,7 +70,7 @@ to the force field archive!
 \label{sec:parttype}
 
 In {\gromacs}, there are three types of \normindex{particle}s, see
-\tabref{ptype}. Only regular atoms and virtual interaction-sites are used
+\tabref{ptype}. Only regular atoms and virtual interaction sites are used
 in {\gromacs}; shells are necessary for
 polarizable models like the Shell-Water models~\cite{Maaren2001a}.
 
@@ -77,7 +82,7 @@ Particle        		& Symbol        \\
 \hline
 \seeindex{atom}{particle}s      & A   \\
 \seeindex{shell}{particle}s     & S   \\
-\normindex{virtual interaction-sites}	& V (or D)   \\
+\normindex{virtual interaction sites}	& V (or D)   \\
 \dline
 \end{tabular}
 }
@@ -133,7 +138,7 @@ not} as a number (as {\eg} in {\gromos}).
 
 \subsection{Virtual sites}
 \label{sec:vsitetop}
-Some force fields use \normindex{virtual interaction-sites}
+Some force fields use \normindex{virtual interaction sites}
 (interaction sites that are constructed from other particle positions)
 on which certain interactions are located
 ({\eg} on benzene rings, to reproduce the correct
@@ -333,7 +338,9 @@ for the corresponding atom types, according to the \normindex{combination rule}:
 When $\sigma$ and $\epsilon$ need to be supplied (rules 2 and 3),
 it would seem it is impossible to have a non-zero $C^{12}$ combined
 with a zero $C^6$ parameter. However, providing a negative $\sigma$
-will do exactly that.
+will do exactly that, such that $C^6$ is set to zero and $C^{12}$ is
+calculated normally. This situation represents a special case in reading
+the value of $\sigma$, and nothing more.
 
 There is only one set of \normindex{combination rule}s
 for Buckingham potentials:
@@ -427,7 +434,7 @@ them in {\tt atomtypes.atp} as well.
 
 
 
-\subsection{\normindex{Intramolecular pair interaction}s}
+\subsection{Intramolecular pair interactions\index{intramolecular pair interaction}}
 \label{subsec:pairinteractions}
 Extra Lennard-Jones and electrostatic interactions between pairs
 of atoms in a molecule can be added in the {\tt [~pairs~]} section of
@@ -469,7 +476,7 @@ that uses zero for all solute non-bonded parameters, {\ie} charges and LJ parame
 However, the free energy difference between the A and
 B states is not the total hydration free energy.  One has to
 add the free energy for reintroducing the internal Coulomb and 
-LJ interactions in the solute. This second step can be combined with
+LJ interactions in the solute when in vacuum. This second step can be combined with
 the first step when the Coulomb and LJ interactions within
 the solute are not modified. For this purpose, there is a pairs
 function type 2, which is identical to function type 1, except
@@ -482,6 +489,12 @@ it also only uses the A-state parameters. {\bf Note} that
 one should add exclusions for all atom pairs listed in {\tt [~pairs_nb~]},
 otherwise such pairs will also end up in the normal neighbor lists.
 
+Alternatively, this same behavior can be achieved without ever
+touching the topology, by using the {\tt couple-moltype}, {\tt
+  couple-lambda0}, {\tt couple-lambda1}, and {\tt couple-intramol}
+keywords.  See sections \secref{fecalc} and \secref{dgimplement} for
+more information.
+
 All three pair types always use plain Coulomb interactions,
 even when Reaction-field, PME, Ewald or shifted Coulomb interactions
 are selected for the non-bonded interactions.
@@ -490,7 +503,7 @@ in separate ``LJ-14'' and ``Coulomb-14'' entries per energy group pair.
 Energies for {\tt [~pairs_nb~]} are added to the ``LJ-(SR)'' and ``Coulomb-(SR)'' terms.
 }{}
 
-\subsection{\normindex{Implicit Solvent parameters}}
+\subsection{Implicit solvation parameters\index{implicit solvation parameters}}
 Starting with {\gromacs} 4.5, implicit solvent is supported. A section in the
 topology has been introduced to list those parameters:
 
@@ -546,9 +559,9 @@ interactions between the first atom and the other atoms will be excluded.
 
 When all non-bonded interactions within or between groups of atoms need
 to be excluded, is it more convenient and much more efficient to use
-energy monitor group exclusions (see \secref{group}).
+energy monitor group exclusions (see \secref{groupconcept}).
 
-\section{\normindex{Constraint}s}
+\section{Constraint algorithms\index{constraint algorithms}}
 \label{sec:constraints}
 Constraints are defined in the {\tt [~constraints~]} section.
 The format is two atom numbers followed by the function type,
@@ -603,7 +616,7 @@ The {\gromacs} program {\tt pdb2gmx} generates a topology for
 the input coordinate file. Several formats are supported for
 that coordinate file, but {\tt *.pdb} is the most commonly-used format
 (hence the name {\tt pdb2gmx}).
-{\tt pdb2gmx} searches for force fields in subdirectories of the {\gromacs} {\tt share/top}
+{\tt pdb2gmx} searches for force fields in sub-directories of the {\gromacs} {\tt share/top}
 directory and your working directory. Force fields are recognized from
 the file {\tt forcefield.itp} in a directory with the extension {\tt .ff}.
 The file {\tt forcefield.doc} may be present, and if so, its first line
@@ -1105,7 +1118,7 @@ a cysteine in a disulfide or heme linkage.
 
 
 \section{File formats}
-\subsection{\swapindex{Topology}{file}}
+\subsection{Topology file\swapindexquiet{topology}{file}}
 \label{subsec:topfile}
 The topology file is built following the {\gromacs} specification for a
 molecular topology.  A {\tt *.top} file can be generated by
@@ -1209,7 +1222,7 @@ Name of interaction              & Topology file directive          & num.  & fu
 \label{tab:topfile2}\footnotetext[1]{The required number of atom indices for this directive}\footnotetext[2]{The index to use to select this function type}\footnotetext[3]{Indicates which of the parameters for this interaction can be interpolated during free energy calculations}\footnotetext[4]{This interaction type will be used by {{\tts grompp}} for generating exclusions}\footnotetext[5]{This interaction type can be converted to constraints by {{\tts grompp}}}\footnotetext[7]{The combination rule determines the type of LJ parameters, see~\ssecref{nbpar}}\footnotetext[6]{No connection, and so no exclusions, are generated for this interaction}bond
                                    & {\tts bonds}\fnm{4},\fnm{5}    & 2     & 1     & $b_0$ (nm); $k_b$ (\kJmolnm{-2})                      & all        & \ssecref{harmonicbond} \\
 G96 bond                           & {\tts bonds}\fnm{4},\fnm{5}    & 2     & 2     & $b_0$ (nm); $k_b$ (\kJmolnm{-4})                      & all        & \ssecref{G96bond} \\
-Morse                              & {\tts bonds}\fnm{4},\fnm{5}    & 2     & 3     & $b_0$ (nm); $D$ (\kJmol); $\beta$ (nm$^{-1}$)         &            & \ssecref{Morsebond} \\
+Morse                              & {\tts bonds}\fnm{4},\fnm{5}    & 2     & 3     & $b_0$ (nm); $D$ (\kJmol); $\beta$ (nm$^{-1}$)         & all        & \ssecref{Morsebond} \\
 cubic bond                         & {\tts bonds}\fnm{4},\fnm{5}    & 2     & 4     & $b_0$ (nm); $C_{i=2,3}$ (\kJmolnm{-i})                &            & \ssecref{cubicbond} \\
 connection                         & {\tts bonds}\fnm{4}            & 2     & 5     &                                                       &            & \tsecref{excl} \\
 harmonic potential                 & {\tts bonds}                   & 2     & 6     & $b_0$ (nm); $k_b$ (\kJmolnm{-2})                      & all        & \ssecref{harmonicbond},\tsecref{excl} \\
@@ -1224,7 +1237,7 @@ angle                              & {\tts angles}\fnm{5}           & 3     & 1 
 G96 angle                          & {\tts angles}\fnm{5}           & 3     & 2     & $\theta_0$ (deg); $k_\theta$ (\kJmol)                 & all        & \ssecref{G96angle} \\
 cross bond-bond                    & {\tts angles}                  & 3     & 3     & $r_{1e}$, $r_{2e}$ (nm); $k_{rr'}$ (\kJmolnm{-2})     &            & \ssecref{bondbondcross} \\
 cross bond-angle                   & {\tts angles}                  & 3     & 4     & $r_{1e}$, $r_{2e}$ $r_{3e}$ (nm); $k_{r\theta}$ (\kJmolnm{-2}) &   & \ssecref{bondanglecross} \\
-Urey-Bradley                       & {\tts angles}\fnm{5}           & 3     & 5     & $\theta_0$ (deg); $k_\theta$ (\kJmol); $r_{13}$ (nm); $k_{UB}$ (\kJmolnm{-2}) & & \ssecref{Urey-Bradley} \\
+Urey-Bradley                       & {\tts angles}\fnm{5}           & 3     & 5     & $\theta_0$ (deg); $k_\theta$ (\kJmolrad{-2}); $r_{13}$ (nm); $k_{UB}$ (\kJmolnm{-2}) & all & \ssecref{Urey-Bradley} \\
 quartic angle                      & {\tts angles}\fnm{5}           & 3     & 6     & $\theta_0$ (deg); $C_{i=0,1,2,3,4}$ (\kJmolrad{-i})   &            & \ssecref{quarticangle} \\
 tabulated angle                    & {\tts angles}                  & 3     & 8     & table number ($\geq 0$); $k$ (\kJmol)                 & $k$        & \ssecref{tabulatedinteraction} \\
 proper dihedral                    & {\tts dihedrals}               & 4     & 1     & $\phi_s$ (deg); $k_\phi$ (\kJmol); multiplicity       & $\phi,k$   & \ssecref{properdihedral} \\
@@ -1251,7 +1264,7 @@ position restraint                 & {\ttss position_restraints}    & 1     & 1 
 flat-bottomed position restraint   & {\ttss position_restraints}    & 1     & 2     & $g$, $r$ (nm), $k$ (\kJmolnm{-2})                     &            & \ssecref{fbpositionrestraint} \\
 %restraint potential                & {\tts bonds}                   & 2     & 10    & low, up$_1$, up$_2$ (nm); $k_{dr}$ (\kJmolnm{-2})     &            & \ssecref{} \\
 distance restraint                 & {\ttss distance_restraints}    & 2     & 1     & type; label; low, up$_1$, up$_2$ (nm); weight ()      &            & \ssecref{distancerestraint} \\
-dihedral restraint                 & {\ttss dihedral_restraints}    & 4     & 1     & type; label; $\phi_0$ (deg); $\Delta\phi$ (deg); weight () &       & \ssecref{dihedralrestraint} \\
+dihedral restraint                 & {\ttss dihedral_restraints}    & 4     & 1     & $\phi_0$ (deg); $\Delta\phi$ (deg); &    all   & \ssecref{dihedralrestraint} \\
 orientation restraint              & {\ttss orientation_restraints} & 2     & 1     & exp.; label; $\alpha$; $c$ (U nm$^\alpha$); obs. (U); weight (U$^{-1}$) & & \ssecref{orientationrestraint} \\
 angle restraint                    & {\ttss angle_restraints}       & 4     & 1     & $\theta_0$ (deg); $k_c$ (\kJmol); multiplicity        & $\theta,k$ & \ssecref{anglerestraint} \\
 angle restraint (z)                & {\ttss angle_restraints_z}     & 2     & 1     & $\theta_0$ (deg); $k_c$ (\kJmol); multiplicity        & $\theta,k$ & \ssecref{anglerestraint} \\
@@ -1462,8 +1475,13 @@ in a topology, do the following (in case of {\eg} decane):
     1    2     3     4     3 
     2    3     4     5     3
 \end{verbatim}
-and do not forget to {\em erase the 1-4 interaction} 
-in {\tt [~pairs~]}!
+In the original implementation of the potential for
+alkanes~\cite{Ryckaert78} no 1-4 interactions were used, which means
+that in order to implement that particular force field you need to remove the 1-4
+interactions from the {\tt [~pairs~]} section of your topology. In
+most modern force fields, like OPLS/AA or Amber the rules are
+different, and the Ryckaert-Bellemans potential is used as a cosine
+series in combination with 1-4 interactions.
 
 {\bf {\tt [~position_restraints~]} :} harmonically restrain the selected particles
 to reference positions (\ssecref{positionrestraint}). 
@@ -1487,7 +1505,7 @@ The blocks of molecules do not need to be contiguous, but some
 tools (e.g. {\tt \normindex{genion}}) may act only on the first or
 last such block of a particular molecule type. Also, these blocks
 have nothing to do with the definition of \normindex{groups}
-(see \secref{group} and \secref{groups}).
+(see \secref{groupconcept} and \secref{usinggroups}).
 
 \subsection{Molecule.itp file}
 \label{subsec:molitp}
@@ -1657,6 +1675,10 @@ either on the line or in the bonded types,
 For free energy calculations, all or no parameters for topology B
 ($\lambda = 1$) should be added on the same line, after the normal
 parameters, in the same order as the normal parameters.
+From {\gromacs} 4.6 onward, if $\lambda$ is treated as a vector, then
+the {\tt bonded-lambdas} component controls all bonded terms that are
+not explicitly labeled as restraints.  Restrain terms are controlled
+by the {\tt restraint-lambdas} component.
 
 \begin{table}
 \centerline{
@@ -1770,7 +1792,7 @@ files contain lines like:
 #define gd_17     0.000       5.86          3
 \end{verbatim}}
 
-\subsection{\swapindex{Constraint}{force}}
+\subsection{Constraint forces\index{constraint force}}
 \label{subsec:constraintforce}
 The constraint force between two atoms in one molecule can be calculated
 with the free energy perturbation code by adding a constraint between the
@@ -1785,7 +1807,12 @@ between two methanes in water, by combining the two methanes into one ``molecule
 correspond to the chemical definition of a molecule.  In {\gromacs}, a ``molecule''
 can be defined as any group of atoms that one wishes to consider simultaneously.
 The added constraint is of function type 2, which means that it is not
-used for generating exclusions (see~\secref{excl}).\\
+used for generating exclusions (see~\secref{excl}). 
+Note that the constraint free energy term is included in the derivative term, and is
+specifically included in the {\tt bonded-lambdas} component. However, the free
+energy for changing constraints is {\em not} included in the potential energy
+differences used for BAR and MBAR, as this requires reevaluating the energy at
+each of the constraint components.  This functionality is planned for later versions.\\
 
 {\small
 \begin{verbatim}
@@ -1863,14 +1890,14 @@ tensor, not a vector.
 
 
 
-\section{Force field organization \index{force-field organization}}
+\section{Force field organization \index{force field organization}}
 \label{sec:fforganization}
 
 \subsection{Force field files}
 \label{subsec:fffiles}
 As of {\gromacs} version 4.5, 14 force fields are available by default.
 Force fields are detected by the presence of {\tt <name>.ff} directories
-in the {\gromacs} {\tt /share/top} subdirectory and/or the working directory.  
+in the {\gromacs} {\tt /share/top} sub-directory and/or the working directory.
 The information regarding the location of the force field files is printed
 by {\tt pdb2gmx} so you can easily keep track of which version of a force field
 is being called, in case you have made modifications in one location or another.
@@ -1932,8 +1959,7 @@ the atom type database ({\tt .atp}, see~\ssecref{atomtype}), which contains only
 files are described in~\secref{pdb2gmxfiles}.
 
 
-\subsection{Changing force field parameters
-\index{force-field, changing parameters}}
+\subsection{Changing force field parameters\index{force field}}
 If one wants to change the parameters of few bonded interactions in
 a molecule, this is most easily accomplished by typing the parameters
 behind the definition of the bonded interaction directly in the {\tt *.top} file 
@@ -1954,7 +1980,7 @@ combination rules) are defined in the {\tt [~nonbond_params~]}
 section, and changing the Lennard-Jones parameters of an atom type
 has no effect on these combinations.
 
-\subsection{\swapindex{Adding}{atom types}}
+\subsection{Adding atom types\swapindexquiet{adding}{atom types}}
 As of {\gromacs} version 3.1.3, atom types can be added in an extra
 {\tt [~atomtypes~]} section after the the inclusion of the normal
 force field. After the definition of the new atom type(s), additional
@@ -1999,5 +2025,24 @@ since they are not well-tested.}
 % LocalWords:  Loof Buuren Berendsen DDeloof DeLoof VanBuuren endif feia topfe
 % LocalWords:  propanols pentanes ffG PropPent typeB chargeB massB ga gd mols
 % LocalWords:  Propanol Pentane methanes aug natoms residuenr residuename vx vy
-% LocalWords:  atomname atomnr vz Fortran confin ntx GROMOS nbfunc
+% LocalWords:  atomname atomnr vz Fortran confin ntx GROMOS nbfunc GROningen ff
 % LocalWords:  fudgeLJ fudgeQQ ffgmxnb ffgmxbon tdb ffbonded ffnonbonded nonbond
+% LocalWords:  MAchine BIOSON Groningen Spoel Drunen Comp Phys Comm trr AA fdn
+% LocalWords:  aliphatic CHARMM polarisability quadrupole tt normvsbds Waals jj
+% LocalWords:  pairinteractions num Buckingham rcl trans Intramolecular Lennard
+% LocalWords:  excl gen solute unscaled moltype intramol dgimplement Qiu HCT rt
+% LocalWords:  Onufriev OBC LINCS doc xxx residuetypes polyatomic co rotatable
+% LocalWords:  heme cysteine lysine CH NH LP amine nitrenyl ethynyl vsd MCH MNH
+% LocalWords:  chainsep resA atomA nbondsA resB atomB nbondsB newresA newresB
+% LocalWords:  rad deg lcc cc nm intramolecular forcefield PME Ewald
+% LocalWords:  solvation et groupconcept PHE TYR TRP equilibrated pre
+% LocalWords:  macromolecule disulfide harmonicbond Morsebond vsiteN
+% LocalWords:  cubicbond FENEbond tabulatedinteraction harmonicangle
+% LocalWords:  harmonicrestraint bondbondcross bondanglecross genion
+% LocalWords:  quarticangle properdihedral harmonicimproperdihedral
+% LocalWords:  RBdihedral periodicimproperdihedral Fourierdihedral
+% LocalWords:  positionrestraint distancerestraint dihedralrestraint
+% LocalWords:  orientationrestraint anglerestraint usinggroups ing
+% LocalWords:  DDeLoof MBAR Duan JACS Kollman Acc Hornak ILDN AMBERGS
+% LocalWords:  Lindorff Sanbonmatsu PNAS CMAP Schuler JCC pag
+% LocalWords:  aminoacid
