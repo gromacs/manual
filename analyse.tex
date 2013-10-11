@@ -1,30 +1,35 @@
+% This file is part of the GROMACS molecular simulation package.
 %
-% 
-%       This source code is part of
-% 
-%        G   R   O   M   A   C   S
-% 
-% GROningen MAchine for Chemical Simulations
-% 
-%               VERSION 2.0
-% 
-% Copyright (c) 1991-1999
-% BIOSON Research Institute, Dept. of Biophysical Chemistry
-% University of Groningen, The Netherlands
-% 
-% Please refer to:
-% GROMACS: A message-passing parallel molecular dynamics implementation
-% H.J.C. Berendsen, D. van der Spoel and R. van Drunen
-% Comp. Phys. Comm. 91, 43-56 (1995)
-% 
-% Also check out our WWW page:
-% http://md.chem.rug.nl/~gmx
-% or e-mail to:
-% gromacs@chem.rug.nl
-% 
-% And Hey:
-% Gnomes, ROck Monsters And Chili Sauce
+% Copyright (c) 2013, by the GROMACS development team, led by
+% David van der Spoel, Berk Hess, Erik Lindahl, and including many
+% others, as listed in the AUTHORS file in the top-level source
+% directory and at http://www.gromacs.org.
 %
+% GROMACS is free software; you can redistribute it and/or
+% modify it under the terms of the GNU Lesser General Public License
+% as published by the Free Software Foundation; either version 2.1
+% of the License, or (at your option) any later version.
+%
+% GROMACS is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+% Lesser General Public License for more details.
+%
+% You should have received a copy of the GNU Lesser General Public
+% License along with GROMACS; if not, see
+% http://www.gnu.org/licenses, or write to the Free Software Foundation,
+% Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA.
+%
+% If you want to redistribute modifications to GROMACS, please
+% consider that scientific software is very special. Version
+% control is crucial - bugs must be traceable. We will be happy to
+% consider code for inclusion in the official distribution, but
+% derived work must not be called official GROMACS. Details are found
+% in the README & COPYING files - if they are missing, get the
+% official version at http://www.gromacs.org.
+%
+% To help us fund GROMACS development, we humbly ask that you cite
+% the research papers on the package. Check out http://www.gromacs.org
 
 \chapter{Analysis}
 \label{ch:analysis}
@@ -34,19 +39,19 @@ Specific information on the in- and output of these programs can be found
 in the online manual at {\wwwpage}.
 The output files are often produced as finished Grace/Xmgr graphs.
 
-First, in \secref{groups}, the group concept in analysis is explained. 
+First, in \secref{usinggroups}, the group concept in analysis is explained. 
 Then, the different analysis tools are presented.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Groups in Analysis
 
-\section{Groups in Analysis.}
-\label{sec:groups}
+\section{Using Groups}
+\label{sec:usinggroups}\index{groups}
 {\tt make_ndx, mk_angndx}\\
 In \chref{algorithms}, it was explained how {\em groups of
-atoms} can be used in {\tt mdrun}.  In most analysis programs, groups
+atoms} can be used in {\tt mdrun} (see~\secref{groupconcept}).  In most analysis programs, groups
 of atoms must also be chosen. Most programs can generate several default
 index groups, but groups can always be read from an index file. Let's
-consider a simulation of a binary mixture of components A and B. When
+consider the example of a simulation of a binary mixture of components A and B. When
 we want to calculate the radial distribution function (RDF)
 $g_{AB}(r)$ of A with respect to B, we have to calculate:
 \beq
@@ -88,10 +93,19 @@ First, the group name is written between square brackets. The following
 atom numbers may be spread out over as many lines as you like. The
 atom numbering starts at 1.
 
+\swapindexquiet{choosing}{groups}%
+Each tool that can use groups will offer the available alternatives
+for the user to choose. That choice can be made with the number of the
+group, or its name. In fact, the first few letters of the group
+name will suffice if that will distinguish the group from all others.
+There are ways to use Unix shell features to choose group names
+on the command line, rather than interactively. Consult {\wwwpage}
+for suggestions.
+
 \subsection{Default Groups}
 \label{subsec:defaultgroups}
 When no index file is supplied to analysis tools or {\tt grompp},
-a number of default groups are generated to choose from:
+a number of \swapindex{default}{groups} are generated to choose from:
 \begin{description}
 \item[{\tt System}]\mbox{}\\
         all atoms in the system
@@ -281,7 +295,7 @@ up to $r_{max}$, so angle dependent, see \figref{rdfex}D.
 The theory of correlation functions is well established~\cite{Allen87}.
 We describe here the implementation of the various 
 \normindex{correlation} function flavors in the {\gromacs} code.
-The definition of the \swapindex{autocorrelation}{function} (ACF)
+The definition of the \index{autocorrelation function} (ACF)
 $C_f(t)$ for a property $f(t)$ is:
 \beq
 C_f(t)  ~=~     \left\langle f(\xi) f(\xi+t)\right\rangle_{\xi}
@@ -414,7 +428,7 @@ actually the values do not converge.
 \section{Mean Square Displacement}
 \label{sec:msd}
 {\tt g_msd}\\
-To determine the self \swapindex{diffusion}{coefficient} $D_A$ of
+To determine the self \index{diffusion coefficient} $D_A$ of
 particles of type $A$, one can use the \normindex{Einstein
 relation}~\cite{Allen87}:
 \beq 
@@ -613,7 +627,7 @@ where the {\em distance} {\bf r}$_{ij}$ between atoms at time $t$
 is compared with the distance between the same atoms at time $0$.
 
 %\ifthenelse{\equal{\gmxlite}{1}}{}{
-\section{\normindex{Covariance analysis}}
+\section{Covariance analysis\index{covariance analysis}}
 \label{sec:covanal}
 Covariance analysis, also called
 \seeindex{principal component analysis}{covariance analysis}
@@ -768,7 +782,7 @@ the results is done using {\tt g_anaeig}.
 
 \section{Hydrogen bonds}
 {\tt g_hbond}\\
-The program {\tt \normindex{g_hbond}} analyses the {\em hydrogen bonds} (H-bonds)
+The program {\tt \normindex{g_hbond}} analyzes the {\em hydrogen bonds} (H-bonds)
 between all possible donors D and acceptors A. To determine if an
 H-bond exists, a geometrical criterion is used, see also
 \figref{hbond}:
@@ -788,7 +802,7 @@ r       & \leq  & r_{HB}        & = & 0.35~\mbox{nm}    \\
 The value of $r_{HB} = 0.35$~nm corresponds to the first minimum of the RDF of 
 SPC water (see also \figref{rdf}).
 
-The program {\tt g_hbond} analyses all hydrogen bonds existing
+The program {\tt g_hbond} analyzes all hydrogen bonds existing
 between two groups of atoms (which must be either identical or
 non-overlapping) or in specified donor-hydrogen-acceptor triplets, in
 the following ways:
@@ -1007,4 +1021,6 @@ to be more up-to-date.
 % LocalWords:  mindist mdmat rms rmsdist rmsd jj diag eigenvectors covar anaeig
 % LocalWords:  macromolecule trr tpr gro pdb nofit hbond rclcl HB multi Luzar
 % LocalWords:  dssp rama xrama rg Ramachandran phipsi amphipathic HPr xvgr pvd
-% LocalWords:  Scripps RDF
+% LocalWords:  Scripps RDF online usinggroups mdrun groupconcept HOH
+% LocalWords:  residuetypes determinding OpenGL traj ov rcl ij ps nm
+% LocalWords:  autocorrelation interfacial

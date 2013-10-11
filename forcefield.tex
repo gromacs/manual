@@ -1,31 +1,37 @@
-% 
-%       This source code is part of
-% 
-%        G   R   O   M   A   C   S
-% 
-% GROningen MAchine for Chemical Simulations
-% 
-%               VERSION 2.0
-% 
-% Copyright (c) 1991-1999
-% BIOSON Research Institute, Dept. of Biophysical Chemistry
-% University of Groningen, The Netherlands
-% 
-% Please refer to:
-% GROMACS: A message-passing parallel molecular dynamics implementation
-% H.J.C. Berendsen, D. van der Spoel and R. van Drunen
-% Comp. Phys. Comm. 91, 43-56 (1995)
-% 
-% Also check out our WWW page:
-% http://md.chem.rug.nl/~gmx
-% or e-mail to:
-% gromacs@chem.rug.nl
-% 
-% And Hey:
-% Gnomes, ROck Monsters And Chili Sauce
+% This file is part of the GROMACS molecular simulation package.
 %
+% Copyright (c) 2013, by the GROMACS development team, led by
+% David van der Spoel, Berk Hess, Erik Lindahl, and including many
+% others, as listed in the AUTHORS file in the top-level source
+% directory and at http://www.gromacs.org.
+%
+% GROMACS is free software; you can redistribute it and/or
+% modify it under the terms of the GNU Lesser General Public License
+% as published by the Free Software Foundation; either version 2.1
+% of the License, or (at your option) any later version.
+%
+% GROMACS is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+% Lesser General Public License for more details.
+%
+% You should have received a copy of the GNU Lesser General Public
+% License along with GROMACS; if not, see
+% http://www.gnu.org/licenses, or write to the Free Software Foundation,
+% Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA.
+%
+% If you want to redistribute modifications to GROMACS, please
+% consider that scientific software is very special. Version
+% control is crucial - bugs must be traceable. We will be happy to
+% consider code for inclusion in the official distribution, but
+% derived work must not be called official GROMACS. Details are found
+% in the README & COPYING files - if they are missing, get the
+% official version at http://www.gromacs.org.
+%
+% To help us fund GROMACS development, we humbly ask that you cite
+% the research papers on the package. Check out http://www.gromacs.org
 
-\chapter{Interaction function and force field\index{force-field}}
+\chapter{Interaction function and force fields\index{force field}}
 \label{ch:ff}
 To accommodate the potential functions used
 in some popular force fields (see \ref{sec:ff}), {\gromacs} offers a choice of functions,
@@ -71,7 +77,8 @@ V_{LJ}(\rij) =  \frac{C_{ij}^{(12)}}{\rij^{12}} -
 See also \figref{lj}
 The parameters $C^{(12)}_{ij}$ and $C^{(6)}_{ij}$  depend on pairs of
 {\em atom types}; consequently they are taken from a matrix of
-LJ-parameters.
+LJ-parameters. In the Verlet cut-off scheme, the potential is shifted
+by a constant such that it is zero at the cut-off distance.
 
 \begin{figure}
 \centerline{\includegraphics[width=8cm]{plots/f-lj}}
@@ -120,8 +127,8 @@ This last rule is used by the OPLS force field.
 
 
 %\ifthenelse{\equal{\gmxlite}{1}}{}{
-\subsection{Buckingham potential}
-The \normindex{Buckingham} 
+\subsection{\normindex{Buckingham potential}}
+The Buckingham
 potential has a more flexible and realistic repulsion term
 than the Lennard-Jones interaction, but is also more expensive to
 compute. The potential form is:
@@ -328,7 +335,7 @@ When $r_1$ = 0, the modified Coulomb force function is
 \beq
  F_s(r) = \frac{1}{r^2} - \frac{5 r^2}{r_c^4} + \frac{4 r^3}{r_c^5}
 \eeq
-which is identical to the {\em \swapindex{parabolic}{force}} 
+which is identical to the {\em \index{parabolic force}} 
 function recommended to be used as a short-range function in 
 conjunction with a \swapindex{Poisson}{solver} 
 for the long-range part~\cite{Berendsen93a}.
@@ -347,7 +354,7 @@ using r$_1$ = 2 and r$_c$ = 4.}
 \end{figure}
 
 \subsection{Modified short-range interactions with Ewald summation}
-When \normindex{Ewald sum}mation or \seeindex{particle-mesh
+When Ewald summation\index{Ewald sum} or \seeindex{particle-mesh
 Ewald}{PME}\index{Ewald, particle-mesh} is used to calculate the
 long-range interactions, the 
 short-range Coulomb potential must also be modified, similar to the
@@ -419,7 +426,7 @@ complex. One particular disadvantage is that since the form is not harmonic,
 the average energy of a single bond is not equal to $\half kT$ as it is for 
 the normal harmonic potential.
 
-\subsection{Morse potential bond stretching}
+\subsection{\normindex{Morse potential} bond stretching}
 \label{subsec:Morsebond}
 %\author{F.P.X. Everdij}
 %
@@ -500,9 +507,8 @@ The force corresponding to this potential is:
 \ve{F}_i(\rvij) = 2k^b_{ij}(\rij-b_{ij})~\rnorm + 3k^b_{ij}k^{cub}_{ij}(\rij-b_{ij})^2~\rnorm
 \eeq
 
-\subsection{FENE bond stretching potential}
+\subsection{FENE bond stretching potential\index{FENE potential}}
 \label{subsec:FENEbond}
-\index{FENE potential}
 In coarse-grained polymer simulations the beads are often connected
 by a FENE (finitely extensible nonlinear elastic) potential~\cite{Warner72}:
 \beq
@@ -641,7 +647,7 @@ V_q(\tijk) ~=~ \sum_{n=0}^5 C_n (\tijk-\tijk^0)^n
 \newcommand{\rkj}{r_{kj}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{\swapindex{Improper}{dihedral}s}
+\subsection{Improper dihedrals\swapindexquiet{improper}{dihedral}}
 \label{sec:imp}
 Improper dihedrals are meant to keep \swapindex{planar}{group}s ({\eg} 
 aromatic rings) planar, or to prevent molecules from flipping over to their
@@ -684,7 +690,7 @@ There is a separate dihedral type for this (type 4) only to be able
 to distinguish improper from proper dihedrals in the parameter section
 and the output.
 
-\subsection{Proper dihedrals}
+\subsection{Proper dihedrals\swapindexquiet{proper}{dihedral}}
 For the normal \normindex{dihedral} interaction there is a choice of
 either the {\gromos} periodic function or a function based on
 expansion in powers of $\cos \phi$ (the so-called Ryckaert-Bellemans
@@ -700,7 +706,7 @@ interactions. You should therefore not modify topologies generated by
 
 \subsubsection{Proper dihedrals: periodic type}
 \label{subsec:properdihedral}
-\swapindex{Proper}{dihedral} angles are defined according to the IUPAC/IUB
+Proper dihedral angles are defined according to the IUPAC/IUB
 convention, where $\phi$ is the angle between the $ijk$ and the $jkl$
 planes, with {\bf zero} corresponding to the {\em cis} configuration
 ($i$ and $l$ on the same side). There are two dihedral function types
@@ -805,7 +811,7 @@ to compute Fourier dihedrals (see above), because this is more efficient.\\
 literature OPLS parameters to {\bf kJ mol$^{-1}$} in {\gromacs}.\\
 
 %\ifthenelse{\equal{\gmxlite}{1}}{}{
-\subsection{\normindex{Tabulated interaction function}s}
+\subsection{Tabulated bonded interaction functions\index{tabulated bonded interaction function}}
 \label{subsec:tabulatedinteraction}
 For full flexibility, any functional shape can be used for
 bonds, angles and dihedrals through user-supplied tabulated functions.
@@ -852,9 +858,10 @@ the system, either to avoid disastrous deviations, or to include
 knowledge from experimental data. In either case they are not really
 part of the force field and the reliability of the parameters is not
 important. The potential forms, as implemented in {\gromacs}, are
-mentioned just for the sake of completeness.
+mentioned just for the sake of completeness. Restraints and constraints
+refer to quite different algorithms in {\gromacs}.
 
-\subsection{\swapindex{Position}{restraint}s}
+\subsection{Position restraints\swapindexquiet{position}{restraint}}
 \label{subsec:positionrestraint}
 These are used to restrain particles to fixed reference positions
 $\ve{R}_i$. They can be used during equilibration in order to avoid
@@ -969,7 +976,7 @@ topology. The following potential is used (Figure~\ref{fig:fbposres}B):
 
 
 %\ifthenelse{\equal{\gmxlite}{1}}{}{
-\subsection{\swapindex{Angle}{restraint}s}
+\subsection{Angle restraints\swapindexquiet{angle}{restraint}}
 \label{subsec:anglerestraint}
 These are used to restrain the angle between two pairs of particles
 or between one pair of particles and the $z$-axis.
@@ -997,7 +1004,7 @@ The equilibrium angle $\theta$ should be between 0 and 180 degrees
 for multiplicity 1 and between 0 and 90 degrees for multiplicity 2.
 
 
-\subsection{\swapindex{Dihedral}{restraint}s}
+\subsection{Dihedral restraints\swapindexquiet{dihedral}{restraint}}
 \label{subsec:dihedralrestraint}
 These are used to restrain the dihedral angle $\phi$ defined by four particles
 as in an improper dihedral (sec.~\ref{sec:imp}) but with a slightly
@@ -1021,7 +1028,7 @@ constant.
 force constants in kJ/mol/rad$^2$.
 %} % Brace matches ifthenelse test for gmxlite
 
-\subsection{\swapindex{Distance}{restraint}s}
+\subsection{Distance restraints\swapindexquiet{distance}{restraint}}
 \label{subsec:distancerestraint}
 Distance restraints 
 add a penalty to the potential when the distance between specified
@@ -1090,7 +1097,7 @@ functionality might be required, which is provided through
 the {\tt [~distance_restraints~]} section and is described below.
 
 %\ifthenelse{\equal{\gmxlite}{1}}{}{
-\subsubsection{Time averaging}
+\subsubsection{Time averaging\swapindexquiet{time-averaged}{distance restraint}}
 Distance restraints based on instantaneous distances can potentially reduce
 the fluctuations in a molecule significantly. This problem can be overcome by restraining
 to a {\em time averaged} distance~\cite{Torda89}.
@@ -1122,7 +1129,7 @@ potential.
 
 This way an atom can satisfy two incompatible distance restraints 
 {\em on average} by moving between two positions. 
-An example would be an amino acid sidechain that is rotating around
+An example would be an amino acid side-chain that is rotating around
 its $\chi$ dihedral angle, thereby coming close to various other groups.
 Such a mobile side chain can give rise to multiple NOEs that can not be
 fulfilled by a single structure.
@@ -1157,7 +1164,7 @@ k^a_{dr}\sqrt{(r_{ij}-r_0)(\bar{r}_{ij}-r_0)}\frac{\rvij}{r_{ij}}
 \end{array} \right.
 \eeq
 
-\subsubsection{Averaging over multiple pairs} 
+\subsubsection{Averaging over multiple pairs\swapindexquiet{ensemble-averaged}{distance restraint}} 
 
 Sometimes it is unclear from experimental data which atom pair
 gives rise to a single NOE, in other occasions it can be obvious that
@@ -1251,49 +1258,6 @@ $r_2$ from ~\eqnref{disre}.  In some cases it can be useful to have
 different force constants for some restraints; this is controlled by
 the column {\tt fac}.  The force constant in the parameter file is
 multiplied by the value in the column {\tt fac} for each restraint.
-
-Some parameters for NMR refinement can be specified in the
-{\tt grompp.mdp} file:
-\begin{description}
-\item[{\tt disre}: type of distance restraining.]
-        The {\tt disre} variable sets the type of distance restraint.
-        {\tt no/simple} turns the distance restraints off/on.
-        When multiple proteins or peptides are present in one 
-        simulation box, ensemble averaging 
-        can be turned on by setting {\tt disre = ensemble}.
-	Normally one would perform ensemble averaging over multiple
-	subsystems, each in a separate box, using {\tt mdrun -multi};
-	supply {\tt topol0.tpr}, {\tt topol1.tpr}, ... with different
-	coordinates and/or velocities.
-\item[{\tt disre_weighting}: force-weighting in restraints with
-         multiple pairs.]
-        By default, the force due to the distance restraint is distributed equally
-        over all the pairs involved in the restraint. This can also be
-        explicitly selected with
-        {\tt disre_weighting = equal}. 
-        If you instead set this option to {\tt disre_weighting = conservative}
-        you get conservative forces when {\tt disre_tau = 0}.
-\item[{\tt disre_mixed}: how to calculate the violations.]
-        {\tt disre_mixed = no} gives normal time-averaged violations.
-        When {\tt disre_mixed = yes} the square root of the
-        product of the time-averaged and the instantaneous
-        violations is used.
-\item[{\tt disre_fc}: force constant $k_{dr}$ for distance restraints.] 
-        $k_{dr}$  (\eqnref{disre}) can be set
-        as variable {\tt disre_fc = 1000} for a force constant of
-        1000 {kJ mol$^{-1}$ nm$^{-2}$}. This value is multiplied by
-        the value in the {\tt fac} column in the distance restraint
-        entries in the topology file.
-\item[{\tt disre_tau}: time constant for restraints.] 
-        $\tau$ (\eqnref{ravdisre}) can be set
-        as variable {\tt disre_tau = 10} for a time constant of
-        10 ps. Time averaging can be turned off by setting {\tt disre_tau}
-        to 0.
-\item[{\tt nstdisreout}: pair distance output frequency.]
-        Determines how often the time-averaged and 
-        instantaneous distances of all atom pairs involved in
-        distance restraints are written to the energy file.
-\end{description}
 %} % Brace matches ifthenelse test for gmxlite
 
 \newcommand{\SSS}{{\mathbf S}}
@@ -1301,7 +1265,7 @@ Some parameters for NMR refinement can be specified in the
 \newcommand{\RR}{{\mathbf R}}
 
 %\ifthenelse{\equal{\gmxlite}{1}}{}{
-\subsection{\swapindex{Orientation}{restraint}s}
+\subsection{Orientation restraints\swapindexquiet{orientation}{restraint}}
 \label{subsec:orientationrestraint}
 This section describes how orientations between vectors,
 as measured in certain NMR experiments, can be calculated
@@ -1399,7 +1363,7 @@ the order tensor.
 
 \subsubsection{Time averaging}
 Since the tensors $\DD_i$ fluctuate rapidly in time, much faster than can
-be observed in an experiment, they should be time averaged in the simulation.
+be observed in an experiment, they should be averaged over time in the simulation.
 However, in a simulation the time and the number of copies of
 a molecule are limited. Usually one can not obtain a converged average
 of the $\DD_i$ tensors over all orientations of the molecule.
@@ -1407,7 +1371,7 @@ If one assumes that the average orientations of the $\ve{r}_i$ vectors
 within the molecule converge much faster than the tumbling time of
 the molecule, the tensor can be averaged in an axis system that 
 rotates with the molecule, as expressed by equation~(\ref{D_rot}).
-The time averaged tensors are calculated
+The time-averaged tensors are calculated
 using an exponentially decaying memory function:
 \beq
 \DD^a_i(t) = \frac{\displaystyle
@@ -1532,43 +1496,12 @@ should be the inverse of the square of the unit of the observable.
 Some parameters for orientation restraints can be specified in the
 {\tt grompp.mdp} file, for a study of the effect of different
 force constants and averaging times and ensemble averaging see~\cite{Hess2003}.
-\begin{description}
-\item[{\tt orire}: use orientation restraining.]
-        {\tt no/yes} turns the distance restraints off/on.
-	Ensemble averaging can be performed using {\tt mdrun -multi},
-	which simulates multiple subsystems in separate boxes;
-	supply {\tt topol0.tpr}, {\tt topol1.tpr}, ... with different
-	coordinates and/or velocities.
-\item[{\tt orire_fc}: force constant $k$ for orientation restraints.] 
-	The unit of $k$ is kJ mol$^{-1}$.
-	{\bf Note} that the force constant for a restraint is this force constant
-	times the weight of the restraint.
-	When set to zero one obtain the calculated orientation without
-	affecting the simulation.
-\item[{\tt orire_tau}: time constant $\tau$ for restraints.] 
-        Set {\tt orire_tau = 10} for a time constant of
-        10 ps. Time averaging can be turned off by setting {\tt orire_tau}
-        to 0.
-\item[{\tt orire_fitgrp}: the fit group for the restraints.]
-	This group of atoms is used to determine the rotation $\RR$
-	of the system with respect to the reference orientation.
-	The reference orientation is the starting conformation of
-	the first subsystem. For a protein {\tt backbone} should be
-        a reasonable choice.	
-\item[{\tt nstorireout}: orientation output frequency.]
-        Determines how often the orientations for all restraints
-        and the order tensor(s) $\SSS$ are written to the energy file.
-	When using time and/or ensemble averaging, the time and ensemble
-	averaged orientations as well as the instantaneous non-ensemble
-	averaged orientations are written to the energy file.
-	These can be analyzed using {\tt g_energy}.
-\end{description}
 %} % Brace matches ifthenelse test for gmxlite
 
 %\ifthenelse{\equal{\gmxlite}{1}}{}{
 \section{Polarization}
 Polarization can be treated by {\gromacs} by attaching
-\normindex{shell} (\normindex{drude}) particles to atoms and/or
+\normindex{shell} (\normindex{Drude}) particles to atoms and/or
 virtual sites. The energy of the shell particle is then minimized at
 each time step in order to remain on the Born-Oppenheimer surface.
 
@@ -1583,7 +1516,7 @@ a single shell particle~\cite{Maaren2001a}.
 Based on early work by \normindex{Thole}~\cite{Thole81}, Roux and
 coworkers have implemented potentials for molecules like
 ethanol~\cite{Lamoureux2003a,Lamoureux2003b,Noskov2005a}. Within such
-molecules, there are intramolecular interactions between shell
+molecules, there are intra-molecular interactions between shell
 particles, however these must be screened because full Coulomb would
 be too strong. The potential between two shell particles $i$ and $j$ is:
 \newcommand{\rbij}{\bar{r}_{ij}}
@@ -1615,6 +1548,12 @@ interpolated smoothly from state A ($\lambda=0$) to state B
 All bonded interactions are interpolated by linear interpolation
 of the interaction parameters. Non-bonded interactions can be
 interpolated linearly or via soft-core interactions.
+
+Starting in {\gromacs} 4.6, $\lambda$ is a vector, allowing different
+components of the free energy transformation to be carried out at
+different rates.  Coulomb, Lennard-Jones, bonded, and restraint terms
+can all be controlled independently, as described in the {\tt .mdp}
+options.
 
 \subsubsection{Harmonic potentials}
 The example given here is for the bond potential, which is harmonic
@@ -1744,7 +1683,7 @@ to the Hamiltonian using Lagrange multipliers $\lambda$:
 \eea
 
 
-\subsection{\normindex{Soft-core interactions}}
+\subsection{Soft-core interactions\index{soft-core interactions}}
 \begin{figure}
 \centerline{\includegraphics[height=6cm]{plots/softcore}}
 \caption{Soft-core interactions at $\LAM=0.5$, with $p=2$ and
@@ -1781,7 +1720,6 @@ in the {\tt .mdp} file), $p$ is the soft-core $\LAM$ power (set with
 $(C_{12}/C_6)^{1/6}$ or an input parameter ({\tt sc_sigma}) when $C_6$ 
 or $C_{12}$ is zero.
 
-
 For intermediate $\LAM$, $r_A$ and $r_B$ alter the interactions very little
 for $r > \alpha^{1/6} \sigma$ and quickly switch the soft-core
 interaction to an almost constant value for smaller $r$ (\figref{softcore}). 
@@ -1811,18 +1749,49 @@ The contribution to the derivative of the free energy is:
 
 The original GROMOS Lennard-Jones soft-core function~\cite{Beutler94}
 uses $p=2$, but $p=1$ gives a smoother $\partial H/\partial\LAM$ curve.
-When the changes between the two states involve both the disappearing
-and appearing of atoms, it is important that the overlapping of atoms
-happens around $\LAM=0.5$. This can usually be achieved with
-$\alpha$$\approx0.7$ for $p=1$ and $\alpha$$\approx1.5$ for $p=2$.
+%When the changes between the two states involve both the disappearing
+%and appearing of atoms, it is important that the overlapping of atoms
+%happens around $\LAM=0.5$. This can usually be achieved with
+%$\alpha$$\approx0.7$ for $p=1$ and $\alpha$$\approx1.5$ for $p=2$.
+%MRS: this is now eliminated as of 4.6, since changes between atoms are done linearly.
 
 Another issue that should be considered is the soft-core effect of hydrogens
 without Lennard-Jones interaction. Their soft-core $\sigma$ is
-set with {\tt sc_sigma} in the {\tt .mdp} file. These hydrogens
+set with {\tt sc-sigma} in the {\tt .mdp} file. These hydrogens
 produce peaks in $\partial H/\partial\LAM$ at $\LAM$ is 0 and/or 1 for $p=1$
-and close to 0 and/or 1 with $p=2$. Lowering {\tt\mbox{sc_sigma}} will decrease
+and close to 0 and/or 1 with $p=2$. Lowering {\tt\mbox{sc-sigma}} will decrease
 this effect, but it will also increase the interactions with hydrogens
 relative to the other interactions in the soft-core state.
+
+When soft core potentials are selected (by setting {\tt sc-alpha} >
+0), and the Coulomb and Lennard-Jones potentials are turned on or off
+sequentially, then the Coulombic interaction is turned off linearly,
+rather than using soft core interactions, which should be less
+statistically noisy in most cases.  This behavior can be overwritten
+by using the mdp option {\tt sc-coul} to 'yes'. Additionally, the
+soft-core interaction potential is only applied when either the A or B
+state has zero interaction potential.  If both A and B states have
+nonzero interaction potential, default linear scaling described above
+is used. When both Coulombic and Lennard-Jones interactions are turned
+off simultaneously, a soft-core potential is used, and a hydrogen is
+being introduced or deleted, the sigma is set to {\tt sc-sigma-min},
+which itself defaults to {\tt sc-sigma-default}.
+
+Recently, a new formulation of the soft-core approach has been derived
+that in most cases gives lower and more even statistical variance than
+the standard soft-core path described above.~\cite{Pham2011,Pham2012}
+Specifically, we have:
+\bea
+V_{sc}(r) &=& \LL V^A(r_A) + \LAM V^B(r_B)
+    \\
+r_A &=& \left(\alpha \sigma_A^{48} \LAM^p + r^{48} \right)^\frac{1}{48}
+    \\
+r_B &=& \left(\alpha \sigma_B^{48} \LL^p + r^{48} \right)^\frac{1}{48}
+\eea
+This ``1-1-48'' path is also implemented in {\gromacs}. Note that for this path the soft core $\alpha$
+should satisfy $0.001 < \alpha < 0.003$,rather than $\alpha \approx
+0.5$.
+
 %} % Brace matches ifthenelse test for gmxlite
 
 %\ifthenelse{\equal{\gmxlite}{1}}{}{
@@ -1861,9 +1830,8 @@ by a factor of two, but in that case also the dispersion (r$^{-6}$)
 and the Coulomb interaction are scaled.
 {\gromacs} can use either of these methods.
 
-\subsection{Charge Groups}
+\subsection{Charge Groups\index{charge group}}
 \label{sec:cg}
-\index{charge group}
 In principle, the force calculation in MD is an $O(N^2)$ problem.
 Therefore, we apply a \normindex{cut-off} for non-bonded force (NBF)
 calculations; only the particles within a certain distance of each
@@ -1880,7 +1848,7 @@ of the protons, and as a result, induce a large dipole moment over the system.
 Therefore, we have to keep groups of atoms with total charge
 0 together. These groups are called {\em charge groups}.
 
-\subsection{Treatment of Cut-offs}
+\subsection{Treatment of Cut-offs\index{cut-off}}
 \newcommand{\rs}{$r_{short}$}
 \newcommand{\rl}{$r_{long}$}
 {\gromacs} is quite flexible in treating cut-offs, which implies
@@ -1973,10 +1941,9 @@ forms of the non-bonded interactions.}
 \newcommand{\rvjl}{\ve{r}_{jl}}
 
 %\ifthenelse{\equal{\gmxlite}{1}}{}{
-\section{Virtual interaction-sites}
+\section{Virtual interaction sites\index{virtual interaction sites}}
 \label{sec:virtual_sites}
-\index{virtual interaction-sites}
-Virtual interaction-sites (called \seeindex{dummy atoms}{virtual interaction-sites} in {\gromacs} versions before 3.3)
+Virtual interaction sites (called \seeindex{dummy atoms}{virtual interaction sites} in {\gromacs} versions before 3.3)
 can be used in {\gromacs} in a number of ways. 
 We write the position of the virtual site $\ve{r}_s$ as a function of
 the positions of other particles \ve{r}$_i$: $\ve{r}_s =
@@ -2210,7 +2177,7 @@ atoms are in the same plane.}
       
 The new 4fdn construct is identified with a `type' value of 2 in the topology. The earlier 4fd
 type is still supported internally (`type' value 1), but it should not be used for
-new simulations. All current Gromacs tools will automatically generate type 4fdn instead.
+new simulations. All current {\gromacs} tools will automatically generate type 4fdn instead.
 
 
 \item[{\bf\sf N.}]\label{subsec:vsiteN} A linear combination of $N$ atoms with relative
@@ -2234,24 +2201,23 @@ only the mass of the A-state is used for the weight
 \newcommand{\avcsix}{\left< C_6 \right>}
 
 %\ifthenelse{\equal{\gmxlite}{1}}{}{
-\section{Dispersion correction}
-\index{dispersion correction}
+\section{Dispersion correction\index{dispersion correction}}
 In this section, we derive long-range corrections due to the use of a
 cut-off for Lennard-Jones or Buckingham interactions.
 We assume that the cut-off is
 so long that the repulsion term can safely be neglected, and therefore
 only the dispersion term is taken into account. Due to the nature of
-the dispersion interaction, energy and pressure corrections are both
-negative. While the energy correction is usually small, it may be
-important for free energy calculations. In contrast, the pressure correction
-is very large and can not be neglected. Although it is, in
+the dispersion interaction (we are truncating a potential proportional
+to $-r^{-6}$), energy and pressure corrections are both negative. While
+the energy correction is usually small, it may be important for free
+energy calculations where differences between two different Hamiltonians
+are considered. In contrast, the pressure correction is very large and
+can not neglected under any circumstances where a correct pressure is
+required, especially for any pressure simulations. Although it is, in
 principle, possible to parameterize a force field such that the pressure
-is close to 1 bar even without correction, such a method makes the
-parameterization dependent on the cut-off and is therefore
-undesirable. {\bf Note} that it is not appropriate to use the long-range
-correction to the dispersion without using either a
-\normindex{reaction field} method or a proper long-range
-electrostatics method such as Ewald summation or PPPM.
+is close to the desired experimental value without correction, such a
+method makes the parameterization dependent on the cut-off and is therefore
+undesirable.
 
 \subsection{Energy}
 \label{sec:ecorr}
@@ -2363,7 +2329,7 @@ restriction as holds for the energy (see \secref{ecorr}).
 %\ifthenelse{\equal{\gmxlite}{1}}{}{
 \section{Long Range Electrostatics}
 \label{sec:lr_elstat}
-\subsection{\normindex{Ewald sum}mation}
+\subsection{Ewald summation\index{Ewald sum}}
 \label{sec:ewald}
 The total electrostatic energy of $N$ particles and their periodic
 images\index{periodic boundary conditions} is given by
@@ -2419,7 +2385,7 @@ fourierspacing  = 0.6
 ewald-rtol      = 1e-5
 \end{verbatim}
 
-The {\tt fourierspacing} parameter times the box dimensions determines
+The ratio of the box dimensions and the {\tt fourierspacing} parameter determines
 the highest magnitude of wave vectors $m_x,m_y,m_z$ to use in each
 direction. With a 3-nm cubic box this example would use $11$ wave vectors
 (from $-5$ to $5$) in each direction.  The {\tt ewald-rtol} parameter
@@ -2430,10 +2396,12 @@ less accurate reciprocal sum.
 \subsection{\normindex{PME}}
 \label{sec:pme}
 Particle-mesh Ewald is a method proposed by Tom
-Darden~\cite{Darden93,Essmann95} to improve the performance of the
+Darden~\cite{Darden93} to improve the performance of the
 reciprocal sum. Instead of directly summing wave vectors, the charges
-are assigned to a grid using cardinal B-spline interpolation. This
-grid is then Fourier transformed with a 3D FFT algorithm and the
+are assigned to a grid using interpolation. The implementation in
+{\gromacs} uses cardinal B-spline interpolation~\cite{Essmann95},
+which is referred to as smooth PME (SPME).
+The grid is then Fourier transformed with a 3D FFT algorithm and the
 reciprocal energy term obtained by a single sum over the grid in
 k-space.
 
@@ -2446,6 +2414,13 @@ than ordinary Ewald summation on medium to large systems. On very
 small systems it might still be better to use Ewald to avoid the
 overhead in setting up grids and transforms.
 For the parallelization of PME see the section on MPMD PME (\ssecref{mpmd_pme}).
+
+With the Verlet cut-off scheme, the PME direct space potential is
+shifted by a constant such that the potential is zero at the
+cut-off. This shift is small and since the net system charge is close
+to zero, the total shift is very small, unlike in the case of the
+Lennard-Jones potential where all shifts add up. We apply the shift
+anyhow, such that the potential is the exact integral of the force.
 
 \subsubsection{Using PME}
 To use Particle-mesh Ewald summation in {\gromacs}, specify the
@@ -2462,7 +2437,8 @@ ewald-rtol      = 1e-5
 \end{verbatim}
 
 In this case the {\tt fourierspacing} parameter determines the maximum
-spacing for the FFT grid and {\tt pme-order} controls the
+spacing for the FFT grid (i.e. minimum number of grid points),
+and {\tt pme-order} controls the
 interpolation order. Using fourth-order (cubic) interpolation and this
 spacing should give electrostatic energies accurate to about
 $5\cdot10^{-3}$. Since the Lennard-Jones energies are not this
@@ -2471,76 +2447,35 @@ accurate it might even be possible to increase this spacing slightly.
 Pressure scaling works with PME, but be aware of the fact that
 anisotropic scaling can introduce artificial ordering in some systems.
 
-\subsection{\normindex{PPPM}}
+\subsection{\normindex{P3M-AD}}
 \label{sec:pppm}
-The \seeindex{Particle-Particle Particle-Mesh}{PPPM} methods of
+The \seeindex{Particle-Particle Particle-Mesh}{P3M} methods of
 Hockney \& Eastwood can also be applied in {\gromacs} for the
-treatment of long range electrostatic
-interactions~\cite{Hockney81,Darden93,Luty95a}.  With this algorithm
-the charges of all particles are spread over a grid of dimensions
-($n_x$,$n_y$,$n_z$) using a weighting function called the
-triangle-shaped charged distribution:
-\beq
-\begin{array}{lcl}
-W(\ve{r}) &=&   W(x)~W(y)~W(z)  \\[1ex]
-W(\xi)  &=& \left\{
-\begin{array}{ll}
-\frac{3}{4} - \left(\frac{\xi}{h}\right)^2 
-        & |\xi| \leq \frac{h}{2}                                \\[0.5ex]
-\frac{1}{2}\left(\frac{3}{2} - \frac{|\xi|}{h}\right)^2 
-        & \frac{h}{2} < |\xi| < \frac{3h}{2}                    \\[0.5ex]
-0       & \frac{3h}{2} \leq |\xi|                               \\[0.5ex]
-\end{array}
-\right.
-\end{array}
-\eeq
-where $\xi$ (x, y or z) is the distance to a grid point in the corresponding
-dimension. Only the 27 closest grid points need to be taken into account for each charge.
+treatment of long range electrostatic interactions~\cite{Hockney81}.
+Although the P3M method was the first efficient long-range electrostatics
+method for molecular simulation, the smooth PME (SPME) method has largely
+replaced P3M as the method of choice in atomistic simulations. One performance
+disadvantage of the original P3M method was that it required 3 3D-FFT
+back transforms to obtain the forces on the particles. But this is not
+required for P3M and the forces can be derived through analytical differentiation
+of the potential, as done in PME. The resulting method is termed P3M-AD.
+The only remaining difference between P3M-AD and PME is the optimization
+of the lattice Green influence function for error minimization that P3M uses.
+However, in 2012 it has been shown that the SPME influence function can be
+modified to obtain P3M~\cite{Ballenegger2012}.
+This means that the advantage of error minimization in P3M-AD can be used
+at the same computational cost and with the same code as PME,
+just by adding a few lines to modify the influence function.
+However, at optimal parameter setting the effect of error minimization
+in P3M-AD is less than 10\%. P3M-AD does show large accuracy gains with
+interlaced (also known as staggered) grids, but that is not supported
+in {\gromacs} (yet).
 
-Then, this charge distribution is Fourier transformed using a 3D inverse FFT 
-routine.
-In Fourier space, a convolution with function $\hat{G}$ is performed:
-\beq
-\hat{G}(k)      ~=~     \frac{\hat{g}(k)}{\epsilon_0 k^2}
-\eeq
-where $\hat{g}$ is the Fourier transform of the charge spread function
-g(r). This yields the long-range potential $\hat{\phi}(k)$ on the mesh, which
-can be transformed using a forward FFT routine into the real space potential.
-Finally, the potential and forces are retrieved using interpolation~\cite{Luty95a}.
-%
-% note - this accuracy is just a rough estimate...
-%
-It is not easy to calculate the full long-range virial tensor with
-PPPM, but it is possible to obtain the trace. This means that the sum
-of the pressure components is correct (and therefore the isotropic
-pressure) but not necessarily the individual pressure components!
-
-\subsubsection{Using PPPM}
-To use the PPPM algorithm in {\gromacs}, specify the
-following lines in your {\tt .mdp} file:
-
+P3M is used in {\gromacs} with exactly the same options as used with PME
+by selecting the electrostatics type:
 \begin{verbatim}
-coulombtype     = PPPM
-rlist           = 1.0
-rcoulomb        = 0.85
-rcoulomb_switch = 0.0
-rvdw            = 1.0
-fourierspacing  = 0.075
+coulombtype     = P3M-AD
 \end{verbatim}
-
-For details on the switch parameters, see the section on modified
-long-range interactions in this manual. When using PPPM we recommend
-to take at most 0.075 nm per grid point ({\eg} 20 grid points for 1.5
-nm).  PPPM does not provide the same accuracy as PME, but can be
-slightly faster in some cases. Due to the problem with the pressure
-tensor you shouldn't use it with pressure coupling.
-
-PPPM is currently disabled in GROMACS, but there are plans to
-re-introduce it.
-%We're somewhat ambivalent about PPPM, so if you use it please contact
-%us - otherwise it might be removed from future releases so we can concentrate
-%our efforts on PME.
-
 
 \subsection{Optimizing Fourier transforms}
 To get the best possible performance you should try to avoid large
@@ -2596,12 +2531,12 @@ improve the scaling in most cases.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Force field\index{force-field}}
+\section{Force field\index{force field}}
 \label{sec:ff}
 A force field is built up from two distinct components:
 \begin{itemize}
 \item The set of equations (called the {\em
-    \swapindex{potential}{function}s}) used to generate the potential
+    \index{potential function}s}) used to generate the potential
   energies and their derivatives, the forces. These are described in
   detail in the previous chapter.
 \item The parameters used in this set of equations. These are not
@@ -2623,13 +2558,13 @@ select we recommend \gromosv{96} for united-atom setups and OPLS-AA/L for
 all-atom parameters. That said, we describe the available options in
 some detail.
 
-\subsection{GROMOS87\index{gromos-87 force field}}
+\subsection{GROMOS87\index{GROMOS87 force field}}
 The \gromosv{87} suite of programs and corresponding force
 field~\cite{biomos} formed the basis for the development of {\gromacs}
 in the early 1990s.  The original GROMOS87 force field is not
 available in {\gromacs}. In previous versions ($<$ 3.3.2) there used
 to be the so-called ``{\gromacs} force field,'' which was based on
-\gromosv{87}~\cite{biomos}\index{gromos-87}, with a small modification
+\gromosv{87}~\cite{biomos}\index{GROMOS87}, with a small modification
 concerning the interaction between water oxygens and carbon
 atoms~\cite{Buuren93b,Mark94}, as well as 10 extra atom
 types~\cite{Jorgensen83,Buuren93a,Buuren93b,Mark94,Liu95}. Whenever
@@ -2640,11 +2575,11 @@ in~\cite{Buuren93b,Mark94}.  As noted by {\tt pdb2gmx}, this force field is
 ``deprecated,'' indicating that newer, perhaps more reliable, versions of this
 parameter set are available.  For backwards compatibility, it is maintained 
 in the current release.  Should you have a justifiable reason to use this
-force field, all necessary files are provided in the {\tt gmx.ff} subdirectory
+force field, all necessary files are provided in the {\tt gmx.ff} sub-directory
 of the {\gromacs} library.  See also the note in~\ssecref{atomtype}.
 
-\subsubsection{\swapindex{All-hydrogen}{force-field}}
-The \gromosv{87}-based all-hydrogen force-field is almost identical to the
+\subsubsection{All-hydrogen force field}
+The \gromosv{87}-based all-hydrogen force field is almost identical to the
 normal \gromosv{87} force field, since the extra hydrogens have no
 Lennard-Jones interaction and zero charge. The only differences are in
 the bond angle and improper dihedral angle terms. This force field is
@@ -2652,7 +2587,7 @@ only useful when you need the exact hydrogen positions, for instance
 for distance restraints derived from NMR measurements. When citing
 this force field please read the previous paragraph.
 
-\subsection{\gromosv{96}\index{gromos-96 force field}}
+\subsection{\gromosv{96}\index{GROMOS96 force field}}
 {\gromacs} supports the \gromosv{96} force fields~\cite{gromos96}.
 All parameters for the 43A1, 43A2 (development, improved alkane
 dihedrals), 45A3, 53A5, and 53A6 parameter sets are included.  All standard
@@ -2662,7 +2597,7 @@ by {\tt pdb2gmx}.
 The \gromosv{96} force field is a further development of the \gromosv{87} force field.
 It has improvements over the \gromosv{87} force field for proteins and small molecules.
 {\bf Note} that the sugar parameters present in 53A6 do correspond to those published in 
-JCC 2004 vol 25 pag 1656, which are different from those present in 45A4, which
+2004\cite{Oostenbrink2004}, which are different from those present in 45A4, which
 is not included in {\gromacs} at this time.  The 45A4 parameter set corresponds to a later
 revision of these parameters. 
 The \gromosv{96} force field is not, however, recommended for use with long alkanes and
@@ -2689,8 +2624,7 @@ of 1.4 nm, so be sure to use a Lennard-Jones cut-off ({\tt rvdw}) of at least 1.
 A larger cut-off is possible because the Lennard-Jones potential and forces
 are almost zero beyond 1.4 nm.
 
-\subsubsection{\gromosv{96} files}\index{gromos-96 files}\index{files,
-gromos|see{gromos-96 files}}
+\subsubsection{\gromosv{96} files\swapindexquiet{GROMOS96}{files}}
 {\gromacs} can read and write \gromosv{96} coordinate and trajectory files.
 These files should have the extension {\tt .g96}.
 Such a file can be a \gromosv{96} initial/final
@@ -2718,7 +2652,7 @@ of the blocks. {\bf Note} that all {\gromacs} programs can read compressed
 
 \subsection{OPLS/AA\index{OPLS/AA force field}}
 
-\subsection{AMBER\index{Amber force field}}
+\subsection{AMBER\index{AMBER force field}}
 
 As of version 4.5, {\gromacs} provides native support for the following AMBER force fields:
 
@@ -2732,7 +2666,7 @@ As of version 4.5, {\gromacs} provides native support for the following AMBER fo
 \item AMBERGS~\cite{Garcia2002}
 \end{itemize}
 
-\subsection{CHARMM\index{Charmm force field}}
+\subsection{CHARMM\index{CHARMM force field}}
 
 As of version 4.5, {\gromacs} supports the CHARMM27 force field for proteins~\cite{mackerell04, mackerell98}, lipids~\cite{feller00} and nucleic acids~\cite{foloppe00}. The protein parameters (and to some extent the lipid and nucleic acid parameters) were thoroughly tested -- both by comparing potential energies between the port and the standard parameter set in the CHARMM molecular simulation package, as well by how the protein force field behaves together with {\gromacs}-specific techniques such as virtual sites (enabling long time steps) and a fast implicit solvent recently implemented~\cite{Larsson10} -- and the details and results are presented in the paper by Bjelkmar et al.~\cite{Bjelkmar10}. The nucleic acid parameters, as well as the ones for HEME, were converted and tested by Michel Cuendet.
 
@@ -2741,9 +2675,9 @@ When selecting the CHARMM force field in {\tt \normindex{pdb2gmx}} the default o
 \subsection{Coarse-grained force-fields}
 \index{force-field, coarse-grained}
 \label{sec:cg-forcefields}
+Coarse-graining is a systematic way of reducing the number of degrees of freedom representing a system of interest. To achieve this, typically whole groups of atoms are represented by single beads and the coarse-grained force fields describes their effective interactions. Depending on the choice of parameterization, the functional form of such an interaction can be complicated and often tabulated potentials are used.
 
-A coarse-grained force field is not just one specific force field (a set of parameter), but a set of (mostly tabulated) interactions. The coarse grained force field (less degrees of freedom) is designed to reproduce certain properties of an underlying high resolution system (many degrees of freedom), which can be an atomistic system or even an experimental course of setup.
-Depending on the properties to reproduce there are different methods to derive such force fields:
+Coarse-grained models are designed to reproduce certain properties of a reference system. This can be either a full atomistic model or even experimental data. Depending on the properties to reproduce there are different methods to derive such force fields. An incomplete list of methods is given below:
 \begin{itemize}
 \item Conserving free energies
 \begin{itemize}
@@ -2761,10 +2695,7 @@ Depending on the properties to reproduce there are different methods to derive s
 \end{itemize}
 \end{itemize}
 
-Note that this list is incomplete. There are software packages, based on GROMACS, which 
-offer an implementation of the above algorithms, i.e. the \normindex{VOTCA package}~\cite{ruehle2009}, which
-can be found under \href{http://www.votca.org}{www.votca.org}, has several coarse-graining 
-tutorials using GROMACS on this matter.
+Note that coarse-grained potentials are state dependent (e.g. temperature, density,...) and should be re-parametrized depending on the system of interest and the simulation conditions. This can for example be done using the \normindex{Versatile Object-oriented Toolkit for Coarse-Graining Applications (VOTCA)}~\cite{ruehle2009}. The package was designed to assists in systematic coarse-graining, provides implementations for most of the algorithms mentioned above and has a well tested interface to {\gromacs}. It is available as open source and further information can be found at \href{http://www.votca.org}{www.votca.org}.
 
 \subsection{MARTINI\index{Martini force field}}
 
@@ -2775,7 +2706,7 @@ of many systems, including proteins and membranes.
 
 The \normindex{PLUM force field}~\cite{bereau12} is an example of a solvent-free
 protein-membrane model for which the membrane was derived from structure-based
-coarse-graining~\cite{wang_jpcb10}.  A GROMACS implementation can be found at
+coarse-graining~\cite{wang_jpcb10}.  A {\gromacs} implementation can be found at
 \href{http://code.google.com/p/plumx/}{code.google.com/p/plumx}. 
 
 % LocalWords:  dihedrals centro ij dV dr LJ lj rcl jj Bertelot OPLS bh bham rf
@@ -2787,7 +2718,7 @@ coarse-graining~\cite{wang_jpcb10}.  A GROMACS implementation can be found at
 % LocalWords:  topfile mdrun posres ar dihr lcllll NMR nmr lcllllll NOEs lclll
 % LocalWords:  rav preprocessor ccccccccc ai aj fac disre mdp multi topol tpr
 % LocalWords:  fc ravdisre nstdisreout dipolar lll ccc orientational MSD const
-% LocalWords:  orire fitgrp nstorireout drude intra Noskov et al fecalc coulrf
+% LocalWords:  orire fitgrp nstorireout Drude intra Noskov et al fecalc coulrf
 % LocalWords:  polarizabilities parameterized sigeps Ek sc softcore GROMOS NBF
 % LocalWords:  hydrogens alkane vdwtype coulombtype mdpopt rlist rcoulomb rvdw
 % LocalWords:  nstlist virial funcparm VdW jk jl fvsite fd vsites lcr vsitetop
@@ -2795,4 +2726,8 @@ coarse-graining~\cite{wang_jpcb10}.  A GROMACS implementation can be found at
 % LocalWords:  pcorr ecorr totalcoulomb dir fourierspacing ewald rtol Darden gz
 % LocalWords:  FFT parallelization MPMD mpmd pme fft hoc Gromos gromos oxygens
 % LocalWords:  virials POSITIONRED VELOCITYRED gzipped Charmm Larsson Bjelkmar
-% LocalWords:  Cuendet CMAP nocmap
+% LocalWords:  Cuendet CMAP nocmap dihedral Lennard covalent Verlet
+% LocalWords:  Berthelot nm flexwat ferguson itp harmonicangle versa
+% LocalWords:  harmonicbond atomtypes dihedraltypes equilibrated fdn
+% LocalWords:  distancerestraint LINCS Coulombic ja jb il SPME ILDN
+% LocalWords:  Hamiltonians atomtype AMBERGS rtp cmap graining VOTCA

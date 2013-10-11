@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
+# Keep CMake suitably quiet on Cygwin
+set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
 
 PROJECT(gromacs-manual NONE)
 INCLUDE(UseLATEX.cmake)
@@ -7,7 +9,7 @@ LATEX_GET_OUTPUT_PATH(output_dir)
 # Some variables for manual version numbers. These get transferred
 # into the LaTeX.
 set(MANUAL_MAJOR_VERSION "4")
-set(MANUAL_VERSION "4.5.4")
+set(MANUAL_VERSION "4.6.1")
 
 # Some cache variables that the user needs to set
 set(
